@@ -43,7 +43,7 @@ class _CustomTooltipState extends State<CustomTooltip> {
           child: Material(
             color: Colors.transparent,
             child: Container(
-              width: 500,
+              width: 450,
               constraints: const BoxConstraints(
                 maxHeight: 400, // 👈 Đặt chiều cao nhỏ hơn để dễ test cuộn
               ),
@@ -79,15 +79,15 @@ class _CustomTooltipState extends State<CustomTooltip> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          widget.icNotePart,
-                          style: const TextStyle(
-                            color: Colors.orangeAccent,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
+                        // Text(
+                        //   widget.icNotePart,
+                        //   style: const TextStyle(
+                        //     color: Colors.orangeAccent,
+                        //     fontWeight: FontWeight.bold,
+                        //     fontSize: 16,
+                        //   ),
+                        // ),
+                        // const SizedBox(height: 8),
                         Text(
                           widget.details,
                           style: const TextStyle(

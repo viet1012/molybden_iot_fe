@@ -78,7 +78,6 @@ class _StatusContainerState extends State<StatusContainer> {
   }
 
   void _updateColorForOverdue() {
-    // double opacity = (0.4 + (elapsedSeconds / 600) * (0.8 - 0.4)).clamp(0.4, 0.8);
     double opacity =
         (0.2 + (elapsedSeconds / 600) * (0.8 - 0.2)).clamp(0.2, 0.8);
 

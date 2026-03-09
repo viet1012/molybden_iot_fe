@@ -82,113 +82,253 @@ class _DashboardIOTScreenState extends State<DashboardIOTScreen> {
         appBar: PreferredSize(
           preferredSize: const Size.fromHeight(kToolbarHeight),
           child: AppBar(
-            flexibleSpace: Container(
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    Color(0xFFF4F4F4), // Xanh đen
-                    Color(0xFF2C515E), // Xanh navy xám
-                    Color(0xFF1197D1), // Xanh xám cổ điển
-                  ],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
+              flexibleSpace: Container(
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      Color(0xFFF4F4F4), // Xanh đen
+                      Color(0xFF2C515E), // Xanh navy xám
+                      Color(0xFF1197D1), // Xanh xám cổ điển
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
                 ),
               ),
-            ),
-            title: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    const Shimmer(
-                      period: Duration(milliseconds: 5000),
-                      gradient: LinearGradient(
-                        colors: [
-                          Color(0xFF001F3F), // Xanh đậm
-                          Color(0xFF003D5C), // Xanh trung bình
-                          Color(0xFF0074D9), // Xanh sáng
-                          Color(0xFF39CCCC), // Xanh cyan
-                          Color(0xFF0074D9), // Xanh sáng
-                          Color(0xFF003D5C), // Xanh trung bình
-                          Color(0xFF001F3F), // Xanh đậm
-                        ],
-                        stops: [0.0, 0.15, 0.3, 0.5, 0.7, 0.85, 1.0],
-                        begin: Alignment.centerLeft,
-                        end: Alignment.centerRight,
-                      ),
-                      child: Text(
-                        'Dashboard Molybden',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 24,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    IconButton(
-                      hoverColor: Colors.white,
-                      icon: const Icon(Icons.info, color: Colors.black),
-                      onPressed: () {
-                        setState(() {
-                          _showRulesPopup();
-                        });
-                      },
-                    ),
-                  ],
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    StatusLegendPopup.buildLegendItem(
-                        Colors.blue.withOpacity(0.8),
-                        "Completed",
-                        Colors.green,
-                        Colors.white),
-                    const SizedBox(width: 24),
-                    const Row(
+              title: LayoutBuilder(
+                builder: (context, constraints) {
+                  double width = constraints.maxWidth;
+
+                  /// SCREEN NHỎ (tablet / window nhỏ)
+                  if (width < 800) {
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        SimpleClockIcon(
-                          size: 22, // kích thước
-                          color: Colors.orange, // màu kim
-                          backgroundColor:
-                              Colors.transparent, // màu nền (tùy chọn)
+                        /// ROW 1
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Row(
+                              children: [
+                                const Shimmer(
+                                  period: Duration(milliseconds: 5000),
+                                  gradient: LinearGradient(
+                                    colors: [
+                                      Color(0xFF001F3F),
+                                      Color(0xFF003D5C),
+                                      Color(0xFF0074D9),
+                                      Color(0xFF39CCCC),
+                                      Color(0xFF0074D9),
+                                      Color(0xFF003D5C),
+                                      Color(0xFF001F3F),
+                                    ],
+                                    stops: [
+                                      0.0,
+                                      0.15,
+                                      0.3,
+                                      0.5,
+                                      0.7,
+                                      0.85,
+                                      1.0
+                                    ],
+                                    begin: Alignment.centerLeft,
+                                    end: Alignment.centerRight,
+                                  ),
+                                  child: Text(
+                                    'Dashboard Molybden',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 20,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                IconButton(
+                                  icon: const Icon(Icons.info,
+                                      color: Colors.black),
+                                  onPressed: _showRulesPopup,
+                                ),
+                              ],
+                            ),
+                            Text(
+                              DateFormat("dd/MMM HH:mm:ss")
+                                  .format(_currentTime),
+                              style: const TextStyle(
+                                  color: Colors.white, fontSize: 18),
+                            ),
+                          ],
                         ),
-                        SizedBox(width: 10),
-                        Text(
-                          "Now",
-                          style: TextStyle(fontSize: 18, color: Colors.white),
-                        )
+
+                        const SizedBox(height: 8),
+
+                        /// ROW 2
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Row(
+                              children: [
+                                StatusLegendPopup.buildLegendItem(
+                                    Colors.blue.withOpacity(0.8),
+                                    "Completed",
+                                    Colors.green,
+                                    Colors.white),
+                                const SizedBox(width: 16),
+                                const Row(
+                                  children: [
+                                    SimpleClockIcon(
+                                      size: 20,
+                                      color: Colors.orange,
+                                      backgroundColor: Colors.transparent,
+                                    ),
+                                    SizedBox(width: 6),
+                                    Text(
+                                      "Now",
+                                      style: TextStyle(
+                                          fontSize: 16, color: Colors.white),
+                                    )
+                                  ],
+                                ),
+                                const SizedBox(width: 16),
+                                StatusLegendPopup.buildLegendIconItem(
+                                    "Overdue",
+                                    Icons.warning_amber,
+                                    Colors.red,
+                                    Colors.white),
+                              ],
+                            ),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                Text(
+                                  "Final: ${formatTime(_lastUpdateTime)}",
+                                  style: const TextStyle(
+                                      color: Colors.white70, fontSize: 14),
+                                ),
+                                Text(
+                                  "Next: ${formatTime(_lastUpdateTime?.add(const Duration(minutes: 1)))}",
+                                  style: const TextStyle(
+                                      color: Colors.white70, fontSize: 14),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
                       ],
-                    ),
-                    const SizedBox(width: 24),
-                    StatusLegendPopup.buildLegendIconItem("Overdue",
-                        Icons.warning_amber, Colors.red, Colors.white),
-                  ],
-                ),
-                Text(
-                  DateFormat("dd/MMM/yy HH:mm:ss").format(_currentTime),
-                  style: const TextStyle(color: Colors.white, fontSize: 20),
-                ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text(
-                      "Final update: ${formatTime(_lastUpdateTime)}",
-                      style:
-                          const TextStyle(color: Colors.white70, fontSize: 20),
-                    ),
-                    Text(
-                      "Next update: ${formatTime(_lastUpdateTime?.add(const Duration(minutes: 1)))}",
-                      style:
-                          const TextStyle(color: Colors.white70, fontSize: 20),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
+                    );
+                  }
+
+                  /// SCREEN LỚN (desktop / dashboard TV)
+                  return Row(
+                    children: [
+                      /// LEFT
+                      Expanded(
+                        flex: 3,
+                        child: Row(
+                          children: [
+                            const Shimmer(
+                              period: Duration(milliseconds: 5000),
+                              gradient: LinearGradient(
+                                colors: [
+                                  Color(0xFF001F3F),
+                                  Color(0xFF003D5C),
+                                  Color(0xFF0074D9),
+                                  Color(0xFF39CCCC),
+                                  Color(0xFF0074D9),
+                                  Color(0xFF003D5C),
+                                  Color(0xFF001F3F),
+                                ],
+                                stops: [0.0, 0.15, 0.3, 0.5, 0.7, 0.85, 1.0],
+                                begin: Alignment.centerLeft,
+                                end: Alignment.centerRight,
+                              ),
+                              child: Text(
+                                'Dashboard Molybden',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 24,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            IconButton(
+                              icon: const Icon(Icons.info, color: Colors.black),
+                              onPressed: _showRulesPopup,
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      /// CENTER
+                      Expanded(
+                        flex: 4,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            StatusLegendPopup.buildLegendItem(
+                                Colors.blue.withOpacity(0.8),
+                                "Completed",
+                                Colors.green,
+                                Colors.white),
+                            const SizedBox(width: 24),
+                            const Row(
+                              children: [
+                                SimpleClockIcon(
+                                  size: 22,
+                                  color: Colors.orange,
+                                  backgroundColor: Colors.transparent,
+                                ),
+                                SizedBox(width: 10),
+                                Text(
+                                  "Now",
+                                  style: TextStyle(
+                                      fontSize: 18, color: Colors.white),
+                                )
+                              ],
+                            ),
+                            const SizedBox(width: 24),
+                            StatusLegendPopup.buildLegendIconItem("Overdue",
+                                Icons.warning_amber, Colors.red, Colors.white),
+                          ],
+                        ),
+                      ),
+
+                      /// RIGHT
+                      Expanded(
+                        flex: 3,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            Text(
+                              DateFormat("dd/MMM/yy HH:mm:ss")
+                                  .format(_currentTime),
+                              style: const TextStyle(
+                                  color: Colors.white, fontSize: 20),
+                            ),
+                            const SizedBox(width: 20),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                Text(
+                                  "Final update: ${formatTime(_lastUpdateTime)}",
+                                  style: const TextStyle(
+                                      color: Colors.white70, fontSize: 18),
+                                ),
+                                Text(
+                                  "Next update: ${formatTime(_lastUpdateTime?.add(const Duration(minutes: 1)))}",
+                                  style: const TextStyle(
+                                      color: Colors.white70, fontSize: 18),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  );
+                },
+              )),
         ),
         body: Stack(
           children: [
@@ -331,7 +471,7 @@ class _DashboardIOTScreenState extends State<DashboardIOTScreen> {
           ),
         ),
         child: SizedBox(
-          height: MediaQuery.of(context).size.height / 2.2,
+          height: MediaQuery.of(context).size.height / 1.7,
           child: StreamBuilder<List<FerthModel>>(
             stream: stream,
             builder: (context, snapshot) {

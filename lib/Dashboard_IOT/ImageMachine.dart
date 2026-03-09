@@ -225,10 +225,8 @@
 // }
 
 // import 'dart:async';
-//
 // import 'package:flutter/material.dart';
 // import 'package:provider/provider.dart';
-//
 // import 'error_items_provider.dart';
 //
 // class ImageMachine extends StatefulWidget {
@@ -245,32 +243,19 @@
 //   GlobalKey _imageKey = GlobalKey();
 //
 //   final List<List<dynamic>> validPoints = [
-//     // [0.385, 0.42, 130, 150, "A-2757"],
-//     // [0.48, 0.4, 60, 70, "A-1520"],
-//     // [0.54, 0.25, 80, 60, "A-1389"],
-//     // [0.67, 0.28, 130, 80, "A-2402"],
-//     // [0.75, 0.2, 78, 75, "A-2400"],
-//     // [0.87, 0.28, 130, 80, "A-2002"],
-//     // [0.86, 0.42, 70, 75, "A-1499"],
-//     // [0.87, 0.57, 130, 80, "A-1412"],
-//     // [0.87, 0.82, 130, 80, "A-1592"],
-//     // [0.48, 0.6, 80, 80, "A-1596"],
-//     // [0.57, 0.42, 60, 60, "A-2842"],
-//     // [0.41, 0.9, 90, 60, "A-1999"],
-//     // [0.5, 0.9, 90, 60, "A-1413"],
-//     // [0.57, 0.9, 60, 60, "A-1639"],
-//     // [0.74, 0.9, 60, 60, "A-1587"],
-//     [0.4, 0.45, 60, 60, "A-2172"],
-//     // [0.17, 0.86, 50, 50, "A-1426"],
-//     // [0.13, 0.76, 50, 50, "A-1427"],
-//     // [0.385, 0.42, 110, 145, "Wash_2"],
-//     // [0.75, 0.86, 78, 75, "Temper_1"],
-//     // [0.75, 0.86, 78, 75, "Temper_2"],
-//     // [0.73, 0.51, 76, 76, "Cool_Fan_1_L"],
-//     // [0.8, 0.51, 76, 76, "Cool_Fan_1_R"],
-//     // [0.65, 0.51, 80, 80, "Cool_Fan_2"],
-//     // [0.7, 0.51, 80, 80, "Cool_Fan_3"],
-//     // [0.73, 0.51, 80, 80, "Cool_Fan_4"],
+//     // [0.16, 0.8, 50, 50, "A-2172"],
+//     // [0.21, 0.8, 50, 50, "A-1497"],
+//     // [0.27, 0.8, 50, 50, "A-1450"],
+//     // [0.3, 0.2, 50, 50, "A-1394"],
+//     // [0.37, 0.2, 50, 50, "A-1395"],
+//     // [0.22, 0.1, 50, 50, "Cool_Fan_1"],
+//     // [0.22, 0.1, 50, 50, "Cool_Fan_2"],
+//     // [0.45, 0.42, 50, 50, "Cool_Fan_3"],
+//     // [0.6, 0.2, 50, 50, "1H_Oil_Hot"],
+//     // [0.6, 0.4, 50, 50, "3H_Oil_Cool"],
+//     // [0.6, 0.75, 50, 50, "24H_Oil_Cool"],
+//     // [0.6, 0.9, 50, 50, "Aging_7days"],
+//     // [0.44, 0.23, 50, 50, "A-1427"],
 //   ];
 //
 //   List<bool> _blinkStates = [];
@@ -348,7 +333,7 @@
 //         children: [
 //           // Hình ảnh máy
 //           Image.asset(
-//             'assets/layout.png',
+//             'assets/Picture1.png',
 //             key: _imageKey,
 //             fit: BoxFit.contain,
 //           ),
@@ -445,55 +430,92 @@ class _ImageMachineState extends State<ImageMachine> {
   // ===============================
   // POINTS CONFIG
   // ===============================
+
   static const List<MachinePoint> validPoints = [
     MachinePoint(
-        xPercent: 0.21,
-        yPercent: 0.17,
+        xPercent: 0.14,
+        yPercent: 0.19,
         width: 120,
         height: 120,
         machineId: "A-1426"),
     MachinePoint(
-        xPercent: 0.23,
-        yPercent: 0.45,
+        xPercent: 0.16,
+        yPercent: 0.8,
         width: 120,
         height: 120,
         machineId: "A-2172"),
     MachinePoint(
-        xPercent: 0.4,
-        yPercent: 0.45,
-        width: 120,
-        height: 120,
-        machineId: "A-1450"),
-    MachinePoint(
-        xPercent: 0.8,
+        xPercent: 0.21,
         yPercent: 0.8,
-        width: 120,
-        height: 120,
-        machineId: "A-2757"),
-    MachinePoint(
-        xPercent: 0.31,
-        yPercent: 0.45,
         width: 120,
         height: 120,
         machineId: "A-1497"),
     MachinePoint(
-        xPercent: 0.66,
-        yPercent: 0.27,
+        xPercent: 0.27,
+        yPercent: 0.8,
+        width: 120,
+        height: 120,
+        machineId: "A-1450"),
+    MachinePoint(
+        xPercent: 0.3,
+        yPercent: 0.2,
+        width: 120,
+        height: 120,
+        machineId: "A-1394"),
+    MachinePoint(
+        xPercent: 0.37,
+        yPercent: 0.2,
+        width: 120,
+        height: 120,
+        machineId: "A-1394"),
+    MachinePoint(
+        xPercent: 0.45,
+        yPercent: 0.42,
         width: 120,
         height: 120,
         machineId: "Cool_Fan_3"),
     MachinePoint(
-        xPercent: 0.33,
+        xPercent: 0.22,
         yPercent: 0.1,
         width: 120,
         height: 120,
         machineId: "Cool_Fan_2"),
     MachinePoint(
-        xPercent: 0.33,
+        xPercent: 0.22,
         yPercent: 0.1,
         width: 120,
         height: 120,
         machineId: "Cool_Fan_1"),
+    MachinePoint(
+        xPercent: 0.6,
+        yPercent: 0.2,
+        width: 120,
+        height: 120,
+        machineId: "1H_Oil_Hot"),
+    MachinePoint(
+        xPercent: 0.6,
+        yPercent: 0.4,
+        width: 120,
+        height: 120,
+        machineId: "3H_Oil_Cool"),
+    MachinePoint(
+        xPercent: 0.6,
+        yPercent: 0.75,
+        width: 120,
+        height: 120,
+        machineId: "24H_Oil_Cool"),
+    MachinePoint(
+        xPercent: 0.6,
+        yPercent: 0.9,
+        width: 120,
+        height: 120,
+        machineId: "Aging_7days"),
+    MachinePoint(
+        xPercent: 0.44,
+        yPercent: 0.23,
+        width: 120,
+        height: 120,
+        machineId: "A-1427"),
   ];
 
   // ===============================
@@ -594,7 +616,7 @@ class _ImageMachineState extends State<ImageMachine> {
         return Stack(
           children: [
             Image.asset(
-              'assets/layout.png',
+              'assets/Picture1.png',
               key: _imageKey,
               fit: BoxFit.contain,
             ),

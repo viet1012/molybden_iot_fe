@@ -69,14 +69,14 @@ class _MolybdenTableState extends State<MolybdenTable> {
   ];
 
   static const Map<String, int> estimatedTimes = {
-    "Wash_1": 30,
+    "Wash_1": 60,
     "Dry_1": 60,
     "Cool_Fan_1": 30,
-    "Molipden 1": 30,
+    "Molipden 1": 60,
     "Vacuum": 30,
     "Dry_2": 3,
     "Cool_Fan_2": 10,
-    "Molipden 2": 30,
+    "Molipden 2": 60,
     "Dry_3": 60, // hoặc 90 nếu máy chạy lâu
     "Cool_Fan_3": 20,
     "1H_Oil_Hot": 60,
@@ -996,7 +996,7 @@ class _MolybdenTableState extends State<MolybdenTable> {
     required DateTime computedFinishTime,
   }) {
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      print("========== START SYNC ERRORS ==========");
+      //     print("========== START SYNC ERRORS ==========");
 
       // Remove items no longer overdue
       currentOverdueItems.removeWhere((m) =>
@@ -1029,15 +1029,15 @@ class _MolybdenTableState extends State<MolybdenTable> {
         final rid = m['rowId'];
 
         if (lotId == null || ct == null || machine == null || rid == null) {
-          print("Skip invalid item: $m");
+          //  print("Skip invalid item: $m");
           continue;
         }
 
         final isNew = !errorItemsProvider.errorItemsByRowId.containsKey(rid);
 
         if (isNew) {
-          print(
-              "Add error -> rowId: $rid | machine: $machine | checkType: $ct | lot: $lotId");
+          // print(
+          //     "Add error -> rowId: $rid | machine: $machine | checkType: $ct | lot: $lotId");
 
           errorItemsProvider
               .updateErrorItems(rid, machine, ct, lotId, ["Overdue"]);
@@ -1045,18 +1045,18 @@ class _MolybdenTableState extends State<MolybdenTable> {
       }
 
       // ===== PRINT PROVIDER DATA =====
-      print("===== PROVIDER ERRORS AFTER SYNC =====");
-
-      if (errorItemsProvider.errorItemsByRowId.isEmpty) {
-        print("Provider is EMPTY");
-      } else {
-        errorItemsProvider.errorItemsByRowId.forEach((key, value) {
-          print(
-              "rowId: $key | machineId: ${value['machineId']} | checkType: ${value['checkType']} | lot: ${value['lot']} | errors: ${value['errors']}");
-        });
-      }
-
-      print("========== END SYNC ERRORS ==========");
+      // print("===== PROVIDER ERRORS AFTER SYNC =====");
+      //
+      // if (errorItemsProvider.errorItemsByRowId.isEmpty) {
+      //   print("Provider is EMPTY");
+      // } else {
+      //   errorItemsProvider.errorItemsByRowId.forEach((key, value) {
+      //     print(
+      //         "rowId: $key | machineId: ${value['machineId']} | checkType: ${value['checkType']} | lot: ${value['lot']} | errors: ${value['errors']}");
+      //   });
+      // }
+      //
+      // print("========== END SYNC ERRORS ==========");
     });
   }
 

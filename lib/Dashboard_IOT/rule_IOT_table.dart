@@ -33,7 +33,7 @@ class _FerthRuleTableState extends State<FerthRuleTable>
   static final List<FerthRuleRow> data = [
     FerthRuleRow(
         step: "Wash_1",
-        time: "30m",
+        time: "60m",
         subBush: true,
         mainBush: true,
         newProduct: true),
@@ -51,7 +51,7 @@ class _FerthRuleTableState extends State<FerthRuleTable>
         newProduct: true),
     FerthRuleRow(
         step: "Molipden_1",
-        time: "30m",
+        time: "60m",
         subBush: true,
         mainBush: true,
         newProduct: true),
@@ -75,7 +75,7 @@ class _FerthRuleTableState extends State<FerthRuleTable>
         newProduct: true),
     FerthRuleRow(
         step: "Molipden_2",
-        time: "30m",
+        time: "60m",
         subBush: true,
         mainBush: true,
         newProduct: true),
