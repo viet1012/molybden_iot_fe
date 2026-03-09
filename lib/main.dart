@@ -10,7 +10,7 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return const MaterialApp(
-      title: 'Dashboard Heat Guide',
+      title: 'Dashboard Molybden',
       debugShowCheckedModeBanner: false,
       // home: DashboardScreen(),
       home: DashboardIOTScreen(),

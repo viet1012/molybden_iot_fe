@@ -1,49 +1,49 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <!--
-    If you are serving your web app in a path other than the root, change the
-    href value below to reflect the base path you are serving from.
+    <meta charset="UTF-8">
+    <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+    <meta name="description" content="A new Flutter project.">
 
-    The path provided below has to start and end with a slash "/" in order for
-    it to work correctly.
+    <!-- iOS meta tags & icons -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="apple-mobile-web-app-title" content="flutter_web_app">
+    <link rel="apple-touch-icon" href="icons/Icon-192.png">
 
-    For more details:
-    * https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="favicon.png"/>
 
-    This is a placeholder for base href that will be replaced by the value of
-    the `--base-href` argument provided to `flutter build`.
-  -->
-  <base href="$FLUTTER_BASE_HREF">
+    <title>Dashboard Molybden</title>
+    <link rel="manifest" href="manifest.json">
 
-  <meta charset="UTF-8">
-  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
-  <meta name="description" content="A new Flutter project.">
-
-  <!-- iOS meta tags & icons -->
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black">
-  <meta name="apple-mobile-web-app-title" content="headeguideiot">
-  <link rel="apple-touch-icon" href="icons/Icon-192.png">
-
-  <!-- Favicon -->
-  <link rel="icon" type="image/png" href="favicon.png"/>
-  <style>
-        @font-face {
-          font-family: "Roboto";
-          src: url("assets/fonts/Roboto/Roboto-VariableFont_wdth.ttf") format("truetype");
-          font-weight: normal;
-          font-style: normal;
+    <script>
+        // TẮT SERVICE WORKER HOÀN TOÀN
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.getRegistrations().then(regs => {
+                for (let r of regs) r.unregister();
+            });
         }
 
-        body {
-          font-family: "Roboto", sans-serif;
-        }
-  </style>
-  <title>headeguideiot</title>
-  <link rel="manifest" href="manifest.json">
+        // CONFIG CANVASKIT TỪ SERVER 8381
+        self.flutterConfiguration = {
+            canvasKitBaseUrl: "http://192.168.122.15:8381/"
+        };
+    </script>
+
+    <script defer src="flutter_bootstrap.js"></script>
 </head>
 <body>
-  <script src="flutter_bootstrap.js" async></script>
+<script>
+    window.addEventListener('load', function (ev) {
+      _flutter.loader.loadEntrypoint({
+        onEntrypointLoaded: function(engineInitializer) {
+          engineInitializer.initializeEngine().then(function(appRunner) {
+            appRunner.runApp();
+          });
+        }
+      });
+    });
+</script>
 </body>
 </html>

@@ -296,7 +296,7 @@ class _MolybdenTableState extends State<MolybdenTable> {
         ),
       ];
 
-      while (rowCells.length < 15) {
+      while (rowCells.length < 16) {
         rowCells.add(const SizedBox.shrink());
       }
 
@@ -466,12 +466,12 @@ class _MolybdenTableState extends State<MolybdenTable> {
                       ],
                     ),
                     const SizedBox(height: 10),
-                    Expanded(
-                      child: SingleChildScrollView(
-                        child: FerthMoldMainWaitingTable(
-                            ferthList: moldMainWaitings),
-                      ),
-                    ),
+                    // Expanded(
+                    //   child: SingleChildScrollView(
+                    //     child: FerthMoldMainWaitingTable(
+                    //         ferthList: moldMainWaitings),
+                    //   ),
+                    // ),
                     const SizedBox(height: 10),
                   ],
                 ),
@@ -568,8 +568,16 @@ class _MolybdenTableState extends State<MolybdenTable> {
 
     for (final checkType in kCheckTypes) {
       /// Step không dùng cho ferth này
+      // if (!allowedTypes.contains(checkType)) {
+      //   rowCells.add(const SizedBox.shrink());
+      //   continue;
+      // }
       if (!allowedTypes.contains(checkType)) {
-        rowCells.add(const SizedBox.shrink());
+        rowCells.add(Container(
+          height: 40,
+          color: Colors.grey.withOpacity(.4),
+        ));
+
         continue;
       }
       final item = _findItem(items, checkType);
@@ -988,6 +996,8 @@ class _MolybdenTableState extends State<MolybdenTable> {
     required DateTime computedFinishTime,
   }) {
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      print("========== START SYNC ERRORS ==========");
+
       // Remove items no longer overdue
       currentOverdueItems.removeWhere((m) =>
           m['checkType'] == checkType &&
@@ -996,6 +1006,7 @@ class _MolybdenTableState extends State<MolybdenTable> {
 
       // If Cool_Fan_4 completed => clear lot error
       if (checkType == "Cool_Fan_4" && finishTime != null) {
+        print("Remove lot error: ${lot.lot}");
         errorItemsProvider.removeError(lot.lot);
       }
 
@@ -1003,8 +1014,10 @@ class _MolybdenTableState extends State<MolybdenTable> {
       final stillOverdue = currentOverdueItems.any(
         (m) => m['rowId'] == rowId && m['checkType'] == checkType,
       );
+
       if (!stillOverdue &&
           errorItemsProvider.errorItemsByRowId.containsKey(rowId)) {
+        print("Remove rowId error: $rowId");
         errorItemsProvider.removeError(rowId);
       }
 
@@ -1015,15 +1028,35 @@ class _MolybdenTableState extends State<MolybdenTable> {
         final machine = m['machine'];
         final rid = m['rowId'];
 
-        if (lotId == null || ct == null || machine == null || rid == null)
+        if (lotId == null || ct == null || machine == null || rid == null) {
+          print("Skip invalid item: $m");
           continue;
+        }
 
-        final isNew = !errorItemsProvider.errorItemsByRowId.containsKey(lotId);
+        final isNew = !errorItemsProvider.errorItemsByRowId.containsKey(rid);
+
         if (isNew) {
+          print(
+              "Add error -> rowId: $rid | machine: $machine | checkType: $ct | lot: $lotId");
+
           errorItemsProvider
               .updateErrorItems(rid, machine, ct, lotId, ["Overdue"]);
         }
       }
+
+      // ===== PRINT PROVIDER DATA =====
+      print("===== PROVIDER ERRORS AFTER SYNC =====");
+
+      if (errorItemsProvider.errorItemsByRowId.isEmpty) {
+        print("Provider is EMPTY");
+      } else {
+        errorItemsProvider.errorItemsByRowId.forEach((key, value) {
+          print(
+              "rowId: $key | machineId: ${value['machineId']} | checkType: ${value['checkType']} | lot: ${value['lot']} | errors: ${value['errors']}");
+        });
+      }
+
+      print("========== END SYNC ERRORS ==========");
     });
   }
 
@@ -1047,7 +1080,7 @@ class _MolybdenTableState extends State<MolybdenTable> {
           const AnimatedIconWidget(
             icon: Icons.warning_amber,
             color: Colors.red,
-            size: 16,
+            size: 12,
             animationType: AnimationType.pulse,
             duration: Duration(milliseconds: 800),
           ),
@@ -1055,7 +1088,7 @@ class _MolybdenTableState extends State<MolybdenTable> {
           const AnimatedIconWidget(
             icon: Icons.schedule,
             color: Colors.orange,
-            size: 16,
+            size: 13,
             animationType: AnimationType.rotate,
             duration: Duration(seconds: 3),
           ),

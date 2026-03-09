@@ -9,7 +9,8 @@ import 'model/LotModel.dart';
 import 'model/machine.dart';
 
 class ApiService {
-  final String baseUrl = "http://localhost:9998/heatguide";
+  // final String baseUrl = "http://localhost:9998/guide";
+  final String baseUrl = "http://192.168.122.15:9004/guide";
 
   /// Singleton
   static final ApiService _instance = ApiService._internal();
@@ -21,7 +22,7 @@ class ApiService {
 
   /// STREAM MACHINE
   final StreamController<List<Machine>> _machineController =
-  StreamController.broadcast();
+      StreamController.broadcast();
 
   Stream<List<Machine>> get machineStream => _machineController.stream;
 
@@ -29,20 +30,11 @@ class ApiService {
 
   /// STREAM IOT
   final StreamController<List<FerthModel>> _iotController =
-  StreamController.broadcast();
-
-  final StreamController<List<FerthModel>> _iotController1 =
-  StreamController.broadcast();
-
-  final StreamController<List<FerthModel>> _iotController2 =
-  StreamController.broadcast();
+      StreamController.broadcast();
 
   Stream<List<FerthModel>> get iotStream => _iotController.stream;
-  Stream<List<FerthModel>> get iotStream1 => _iotController1.stream;
-  Stream<List<FerthModel>> get iotStream2 => _iotController2.stream;
 
   List<FerthModel>? _lastIotData;
-  List<FerthModel>? _lastIotData2;
 
   Timer? _timer;
 
@@ -61,7 +53,7 @@ class ApiService {
       List<dynamic> jsonList = jsonDecode(response.body);
 
       List<Machine> machines =
-      jsonList.map((e) => Machine.fromJson(e)).toList();
+          jsonList.map((e) => Machine.fromJson(e)).toList();
 
       if (_isMachineChanged(machines)) {
         _lastMachines = machines;
@@ -124,14 +116,12 @@ class ApiService {
   /// ==========================
 
   void startFetchingIOT() {
-    fetchHeatGuide("findDailyHeatGuideMoldAndMainIOT");
-    fetchHeatGuide("findDailyHeatGuideMainAndMoldIOT");
+    fetchHeatMolybden("findDailyHeatMolybdenIOT");
 
     _timer?.cancel();
 
     _timer = Timer.periodic(const Duration(minutes: 1), (_) {
-      fetchHeatGuide("findDailyHeatGuideMoldAndMainIOT");
-      fetchHeatGuide("findDailyHeatGuideMainAndMoldIOT");
+      fetchHeatMolybden("findDailyHeatMolybdenIOT");
     });
   }
 
@@ -139,7 +129,7 @@ class ApiService {
   /// FETCH IOT
   /// ==========================
 
-  Future<void> fetchHeatGuide(String endpoint) async {
+  Future<void> fetchHeatMolybden(String endpoint) async {
     try {
       final url = Uri.parse("$baseUrl/$endpoint");
 
@@ -151,30 +141,29 @@ class ApiService {
 
       List<dynamic> jsonList = jsonDecode(response.body);
 
-      List<FerthModel> data = jsonList.map((e) {
-        FerthModel ferth = FerthModel.fromJson(e);
+      List<FerthModel> data = jsonList
+          .map((e) {
+            FerthModel ferth = FerthModel.fromJson(e);
 
-        for (var lot in ferth.lots) {
-          lot.items.removeWhere((item) =>
-          item.itemCheck == "HRC_1" ||
-              item.itemCheck == "HRC_2" ||
-              item.itemCheck == "Temp_Point" ||
-              item.itemCheck == "Temp_Point_1" ||
-              item.itemCheck == "Temp_Point_2" ||
-              item.itemCheck == "Temp_Point_3" ||
-              item.itemCheck == "Temp_Point_4");
-        }
+            for (var lot in ferth.lots) {
+              lot.items.removeWhere((item) =>
+                  item.itemCheck == "HRC_1" ||
+                  item.itemCheck == "HRC_2" ||
+                  item.itemCheck == "Temp_Point" ||
+                  item.itemCheck == "Temp_Point_1" ||
+                  item.itemCheck == "Temp_Point_2" ||
+                  item.itemCheck == "Temp_Point_3" ||
+                  item.itemCheck == "Temp_Point_4");
+            }
 
-        ferth.lots.removeWhere((lot) => lot.items.isEmpty);
+            ferth.lots.removeWhere((lot) => lot.items.isEmpty);
 
-        return ferth;
-      }).where((e) => e.lots.isNotEmpty).toList();
+            return ferth;
+          })
+          .where((e) => e.lots.isNotEmpty)
+          .toList();
 
-      if (endpoint.contains("MainAndMold")) {
-        _updateStream(_iotController2, data, _lastIotData2);
-      } else {
-        _updateStream(_iotController, data, _lastIotData);
-      }
+      _updateStream(_iotController, data, _lastIotData);
     } catch (e) {
       print("IOT API error $endpoint $e");
     }
@@ -184,10 +173,8 @@ class ApiService {
   /// UPDATE STREAM
   /// ==========================
 
-  void _updateStream(
-      StreamController<List<FerthModel>> controller,
-      List<FerthModel> newData,
-      List<FerthModel>? lastData) {
+  void _updateStream(StreamController<List<FerthModel>> controller,
+      List<FerthModel> newData, List<FerthModel>? lastData) {
     if (newData.isEmpty) {
       controller.add([]);
       return;
@@ -211,7 +198,5 @@ class ApiService {
 
     _machineController.close();
     _iotController.close();
-    _iotController1.close();
-    _iotController2.close();
   }
 }

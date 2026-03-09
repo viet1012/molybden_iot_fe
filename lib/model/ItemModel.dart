@@ -3,23 +3,28 @@ class ItemModel {
   final DateTime? startTime;
   final DateTime? finishTime; // Có thể null
   final String? machine;
-  ItemModel({required this.itemCheck, required this.startTime, this.finishTime, this.machine});
-  ItemModel.basic( {
-    required this.itemCheck
-  }):startTime = null,
+  ItemModel(
+      {required this.itemCheck,
+      required this.startTime,
+      this.finishTime,
+      this.machine});
+  ItemModel.basic({required this.itemCheck})
+      : startTime = null,
         finishTime = null,
-  machine= null;
+        machine = null;
 
   factory ItemModel.fromJson(Map<String, dynamic> json) {
     return ItemModel(
-      itemCheck: json['itemCheck'],
-      startTime: DateTime.parse(json['startTime']),
-      finishTime: json['finishTime'] != null ? DateTime.parse(json['finishTime']) : null,
-      machine: json['machine'],
-
+      itemCheck: json['itemCheck'] ?? '',
+      startTime: json['startTime'] != null
+          ? DateTime.tryParse(json['startTime'])
+          : null,
+      finishTime: json['finishTime'] != null
+          ? DateTime.tryParse(json['finishTime'])
+          : null,
+      machine: json['machine']?.toString(),
     );
   }
-
   Map<String, dynamic> toJson() {
     return {
       'itemCheck': itemCheck,

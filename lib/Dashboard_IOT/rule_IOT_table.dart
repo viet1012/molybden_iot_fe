@@ -1,176 +1,373 @@
-  import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 
-  class TableRuleIotRowData {
-    final String code;
-    final String moldBush;
-    final String mainBush;
-    final String subBush;
-    final String subPost;
-    final String mainPost;
-    final String moldPost;
-    final String dowelPin;
+class FerthRuleRow {
+  final String step;
+  final String time;
+  final bool subBush;
+  final bool mainBush;
+  final bool newProduct;
 
-    TableRuleIotRowData({
-      required this.code,
-      required this.moldBush,
-      required this.mainBush,
-      required this.subBush,
-      required this.subPost,
-      required this.mainPost,
-      required this.moldPost,
-      required this.dowelPin,
-    });
+  FerthRuleRow({
+    required this.step,
+    required this.time,
+    required this.subBush,
+    required this.mainBush,
+    required this.newProduct,
+  });
+}
+
+class FerthRuleTable extends StatefulWidget {
+  const FerthRuleTable({super.key});
+
+  @override
+  State<FerthRuleTable> createState() => _FerthRuleTableState();
+}
+
+class _FerthRuleTableState extends State<FerthRuleTable>
+    with TickerProviderStateMixin {
+  late List<AnimationController> _controllers;
+  late List<Animation<double>> _fadeAnimations;
+  late List<Animation<Offset>> _slideAnimations;
+  int? _hoveredIndex;
+
+  static final List<FerthRuleRow> data = [
+    FerthRuleRow(
+        step: "Wash_1",
+        time: "30m",
+        subBush: true,
+        mainBush: true,
+        newProduct: true),
+    FerthRuleRow(
+        step: "Dry_1",
+        time: "60m",
+        subBush: true,
+        mainBush: true,
+        newProduct: true),
+    FerthRuleRow(
+        step: "Cool_Fan_1",
+        time: "30m",
+        subBush: true,
+        mainBush: true,
+        newProduct: true),
+    FerthRuleRow(
+        step: "Molipden_1",
+        time: "30m",
+        subBush: true,
+        mainBush: true,
+        newProduct: true),
+    FerthRuleRow(
+        step: "Vaccum",
+        time: "30m",
+        subBush: true,
+        mainBush: true,
+        newProduct: true),
+    FerthRuleRow(
+        step: "Dry_2",
+        time: "3m",
+        subBush: true,
+        mainBush: true,
+        newProduct: true),
+    FerthRuleRow(
+        step: "Cool_Fan_2",
+        time: "10m",
+        subBush: true,
+        mainBush: true,
+        newProduct: true),
+    FerthRuleRow(
+        step: "Molipden_2",
+        time: "30m",
+        subBush: true,
+        mainBush: true,
+        newProduct: true),
+    FerthRuleRow(
+        step: "Dry_3",
+        time: "60-90m",
+        subBush: true,
+        mainBush: true,
+        newProduct: true),
+    FerthRuleRow(
+        step: "Cool_Fan_3",
+        time: "20m",
+        subBush: true,
+        mainBush: true,
+        newProduct: true),
+    FerthRuleRow(
+        step: "1h Hot Oil",
+        time: "60m",
+        subBush: true,
+        mainBush: true,
+        newProduct: false),
+    FerthRuleRow(
+        step: "3h Cool Oil",
+        time: "180m",
+        subBush: true,
+        mainBush: true,
+        newProduct: false),
+    FerthRuleRow(
+        step: "24h Cool Oil",
+        time: "1440m",
+        subBush: false,
+        mainBush: true,
+        newProduct: false),
+    FerthRuleRow(
+        step: "Aging 7day",
+        time: "10080m",
+        subBush: false,
+        mainBush: false,
+        newProduct: true),
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _controllers = List.generate(
+      data.length,
+      (i) => AnimationController(
+        vsync: this,
+        duration: const Duration(milliseconds: 400),
+      ),
+    );
+
+    _fadeAnimations = _controllers
+        .map((c) => Tween<double>(begin: 0, end: 1).animate(
+              CurvedAnimation(parent: c, curve: Curves.easeOut),
+            ))
+        .toList();
+
+    _slideAnimations = _controllers
+        .map((c) => Tween<Offset>(
+              begin: const Offset(-0.05, 0),
+              end: Offset.zero,
+            ).animate(CurvedAnimation(parent: c, curve: Curves.easeOut)))
+        .toList();
+
+    // Staggered row entrance
+    for (int i = 0; i < _controllers.length; i++) {
+      Future.delayed(Duration(milliseconds: 80 + i * 60), () {
+        if (mounted) _controllers[i].forward();
+      });
+    }
   }
 
-  class   RuleIotDataTableWidget extends StatelessWidget {
-    final List<TableRuleIotRowData> data = [
-      TableRuleIotRowData(code: '1', moldBush: "Wash_1 60'", mainBush: "Wash_1 60'", subBush: "Wash_1 60'", subPost: "Wash_1 60'", mainPost: "No Washing", moldPost: "No Washing", dowelPin: "Wash_1 60'"),
-      TableRuleIotRowData(code: '2', moldBush: "Quench 180'", mainBush: "Quench 180'", subBush: "Quench 180'", subPost: "Quench 180'", mainPost: "Quench 15'", moldPost: "Quench 15'", dowelPin: "Quench 180'"),
-      TableRuleIotRowData(code: '3', moldBush: "OilShower 15'", mainBush: "OilShower 15'", subBush: "OilShower 15'", subPost: "OilShower 15'", mainPost: "Wash_2 15'", moldPost: "Wash_2 15'", dowelPin: "OilShower 15'"),
-      TableRuleIotRowData(code: '4', moldBush: "Cool_Fan_1 60'", mainBush: "Cool_Fan_1 60'", subBush: "Cool_Fan_1 60'", subPost: "Cool_Fan_1 60'", mainPost: "Cool_Fan_1 30'", moldPost: "Cool_Fan_1 30'", dowelPin: "Cool_Fan_1 60'"),
-      TableRuleIotRowData(code: '5', moldBush: "Wash_2 60'", mainBush: "Wash_2 60'", subBush: "Wash_2 60'", subPost: "Wash_2 60'", mainPost: "Temper_1 150'", moldPost: "Temper_1 150'", dowelPin: "Wash_2 60'"),
-      TableRuleIotRowData(code: '6', moldBush: "Cool_Fan_2 60'", mainBush: "Cool_Fan_2 60'", subBush: "Cool_Fan_2 60'", subPost: "Cool_Fan_2 60'", mainPost: "Cool_Fan_2 60'", moldPost: "Cool_Fan_2 60'", dowelPin: "Cool_Fan_2 60'"),
-      TableRuleIotRowData(code: '7', moldBush: "Temper_1 150'", mainBush: "Temper_1 150'", subBush: "Temper_1 150'", subPost: "Temper_1 150'", mainPost: "", moldPost: "", dowelPin: "Temper_1 150'"),
-      TableRuleIotRowData(code: '8', moldBush: "Cool_Fan_3 60'", mainBush: "Cool_Fan_3 60'", subBush: "Cool_Fan_3 60'", subPost: "Cool_Fan_3 60'", mainPost: "", moldPost: "", dowelPin: "Cool_Fan_3 60'"),
-      TableRuleIotRowData(code: '9', moldBush: "Temper_2 150'", mainBush: "Temper_2 150'", subBush: "", subPost: "", mainPost: "", moldPost: "", dowelPin: ""),
-      TableRuleIotRowData(code: '10', moldBush: "Cool_Fan_4 60'", mainBush: "Cool_Fan_4 60'", subBush: "", subPost: "", mainPost: "", moldPost: "", dowelPin: ""),
-      TableRuleIotRowData(code: '11', moldBush: "Waiting 1440'", mainBush: "Waiting 1440'", subBush: "", subPost: "", mainPost: "", moldPost: "", dowelPin: ""),
-      TableRuleIotRowData(code: '12', moldBush: "Heat Finish", mainBush: "Heat Finish", subBush: "Heat Finish", subPost: "Heat Finish", mainPost: "Heat Finish", moldPost: "Heat Finish", dowelPin: "Heat Finish"),
-    ];
+  @override
+  void dispose() {
+    for (final c in _controllers) {
+      c.dispose();
+    }
+    super.dispose();
+  }
 
-    @override
-    Widget build(BuildContext context) {
-      return Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Card(
-          elevation: 5,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-          child: SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: SingleChildScrollView(
-              child: DataTableTheme(
-                data: DataTableThemeData(
-                  headingRowColor: WidgetStateProperty.all(  Colors.blue.shade700),
-                  headingTextStyle: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Color(0xFFEAF4FB), Color(0xFFF5F9FC)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+      ),
+      child: Column(
+        children: [
+          _buildHeader(),
+          Expanded(
+            child: ListView.builder(
+              itemCount: data.length,
+              itemBuilder: (context, index) {
+                return FadeTransition(
+                  opacity: _fadeAnimations[index],
+                  child: SlideTransition(
+                    position: _slideAnimations[index],
+                    child: _buildRow(index),
                   ),
-                ),
-                child: DataTable(
-                  columnSpacing: 14, // Giảm khoảng cách giữa các cột
-                  border: TableBorder.all(color: Colors.grey),
-                  columns: const [
-                    DataColumn(label: SizedBox(width: 50, child: Text('No', textAlign: TextAlign.center))),
-                    DataColumn(label: SizedBox(width: 100, child: Text('Mold Bush', textAlign: TextAlign.center))),
-                    DataColumn(label: SizedBox(width: 100, child: Text('Main Bush', textAlign: TextAlign.center))),
-                    DataColumn(label: SizedBox(width: 100, child: Text('Sub Bush', textAlign: TextAlign.center))),
-                    DataColumn(label: SizedBox(width: 100, child: Text('Sub Post', textAlign: TextAlign.center))),
-                    DataColumn(label: SizedBox(width: 100, child: Text('Main Post', textAlign: TextAlign.center))),
-                    DataColumn(label: SizedBox(width: 100, child: Text('Mold Post', textAlign: TextAlign.center))),
-                    DataColumn(label: SizedBox(width: 100, child: Text('Dowel Pins', textAlign: TextAlign.center))),
-                  ],
-                  rows: List.generate(
-                    data.length,
-                        (index) {
-                      final row = data[index];
-                      return DataRow.byIndex(
-                        index: index,
-                        cells: [
-                          DataCell(Text(row.code, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold))),
-                          DataCell(Text(row.moldBush, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold))),
-                          DataCell(Text(row.mainBush, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold))),
-                          DataCell(Text(row.subBush, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold))),
-                          DataCell(Text(row.subPost, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold))),
-                          DataCell(Text(row.mainPost, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold))),
-                          DataCell(Text(row.moldPost, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold))),
-                          DataCell(Text(row.dowelPin, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold))),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
-                        ],
-                      );
-                    },
+  Widget _buildHeader() {
+    return Container(
+      height: 56,
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Color(0xFF0D7DB5), Color(0xFF1A3D4F)],
+          begin: Alignment.centerLeft,
+          end: Alignment.centerRight,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Color(0x441197D1),
+            blurRadius: 10,
+            offset: Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          _headerCell("⚙  PROCESS", flex: 3),
+          _headerCell("⏱  TIME"),
+          _headerCell("SUB BUSH"),
+          _headerCell("MAIN BUSH"),
+          _headerCell("NEW PRODUCT"),
+        ],
+      ),
+    );
+  }
+
+  Widget _headerCell(String text, {int flex = 1}) {
+    return Expanded(
+      flex: flex,
+      child: Center(
+        child: Text(
+          text,
+          textAlign: TextAlign.center,
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+            fontSize: 18,
+            letterSpacing: 0.8,
+            height: 1.3,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRow(int index) {
+    final row = data[index];
+    final isHovered = _hoveredIndex == index;
+    final isEven = index % 2 == 0;
+
+    Color baseColor = isEven ? const Color(0xFFEDF6FB) : Colors.white;
+    Color hoverColor = const Color(0xFFD0ECFA);
+
+    return MouseRegion(
+      onEnter: (_) => setState(() => _hoveredIndex = index),
+      onExit: (_) => setState(() => _hoveredIndex = null),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        height: 48,
+        decoration: BoxDecoration(
+          color: isHovered ? hoverColor : baseColor,
+          border: Border(
+            left: isHovered
+                ? const BorderSide(color: Color(0xFF1197D1), width: 4)
+                : const BorderSide(color: Colors.transparent, width: 4),
+            bottom: BorderSide(color: Colors.grey.shade200, width: 1),
+          ),
+          boxShadow: isHovered
+              ? [
+                  const BoxShadow(
+                    color: Color(0x221197D1),
+                    blurRadius: 8,
+                    offset: Offset(0, 2),
+                  )
+                ]
+              : [],
+        ),
+        child: Row(
+          children: [
+            // PROCESS
+            Expanded(
+              flex: 3,
+              child: Padding(
+                padding: const EdgeInsets.only(left: 14),
+                child: AnimatedDefaultTextStyle(
+                  duration: const Duration(milliseconds: 200),
+                  style: TextStyle(
+                    fontWeight: FontWeight.w700,
+                    fontSize: isHovered ? 20 : 18,
+                    color: isHovered
+                        ? const Color(0xFF0D7DB5)
+                        : const Color(0xFF1A3D4F),
+                    letterSpacing: 0.3,
+                  ),
+                  child: Text(row.step),
+                ),
+              ),
+            ),
+
+            // TIME badge
+            Expanded(
+              child: Center(
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: isHovered
+                        ? const Color(0xFF1197D1)
+                        : const Color(0xFF1A3D4F).withOpacity(0.08),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    row.time,
+                    style: TextStyle(
+                      fontWeight: FontWeight.w800,
+                      fontSize: 18,
+                      color: isHovered ? Colors.white : const Color(0xFF0D7DB5),
+                    ),
                   ),
                 ),
               ),
             ),
-          ),
+
+            // SUB BUSH
+            Expanded(
+                child: Center(child: _animatedIcon(row.subBush, index, 0))),
+
+            // MAIN BUSH
+            Expanded(
+                child: Center(child: _animatedIcon(row.mainBush, index, 1))),
+
+            // NEW PRODUCT
+            Expanded(
+                child: Center(child: _animatedIcon(row.newProduct, index, 2))),
+          ],
         ),
-      );
-    }
+      ),
+    );
   }
 
-  class TableMolipdenRowData {
-    final String no;
-    final String moldBush;
-    final String mainBush;
-    final String subBush;
-
-    TableMolipdenRowData({
-      required this.no,
-      required this.moldBush,
-      required this.mainBush,
-      required this.subBush,
-    });
-  }
-
-  class MolipdenDataTableWidget extends StatelessWidget {
-    final List<TableMolipdenRowData> data = [
-      TableMolipdenRowData(no: '1', moldBush: "Mo1 No", mainBush: "Mo1 No", subBush: "Mo1 No"),
-      TableMolipdenRowData(no: '2', moldBush: "Shake 5'", mainBush: "Shake  5'", subBush: "Shake  5'"),
-      TableMolipdenRowData(no: '3', moldBush: "Dry_170_1st  3'", mainBush: "Dry 170° 3'", subBush: "Dry 170° 3'"),
-      TableMolipdenRowData(no: '4', moldBush: "Cool_Natural 10'", mainBush: "Cool_Natural 10'", subBush: "Cool_Natural 10'"),
-      TableMolipdenRowData(no: '5', moldBush: "Mo2 No", mainBush: "Mo2 No", subBush: "Mo2 No"),
-      TableMolipdenRowData(no: '6', moldBush: "Dry_170_2nd 90'", mainBush: "Dry 170° 90'", subBush: "Dry 170° 60'"),
-      TableMolipdenRowData(no: '7', moldBush: "Cool_Fan_1 20'", mainBush: "Cool_Fan_1 20'", subBush: "Cool_Fan_1 20'"),
-      TableMolipdenRowData(no: '8', moldBush: 'Naiken No', mainBush: 'NCL No', subBush: "Exa No"),
-      TableMolipdenRowData(no: '9', moldBush: "Ngâm dầu nóng 60'", mainBush: "Ngâm dầu nóng 60'", subBush: "Ngâm dầu nóng 60'"),
-      TableMolipdenRowData(no: '10', moldBush: "Ngâm dầu nguội 180'", mainBush: "Ngâm dầu nguội 180'", subBush: "Ngâm dầu nguội 180'"),
-      TableMolipdenRowData(no: '11', moldBush: "", mainBush: "", subBush: "Waiting 180'"),
-
-    ];
-
-    @override
-    Widget build(BuildContext context) {
-      return Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Card(
-          elevation: 4,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-          child: SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: DataTableTheme(
-              data: DataTableThemeData(
-                headingRowColor: WidgetStateProperty.all(Colors.blueAccent),
-                headingTextStyle: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14,),
-              ),
-              child: DataTable(
-                columnSpacing: 14,
-                border: TableBorder.all(color: Colors.grey),
-                columns: const [
-                  DataColumn(label: SizedBox(width: 40, child: Text('No',textAlign: TextAlign.center)),),
-                  DataColumn(label: SizedBox(width: 150, child: Text('Mold Bush',textAlign: TextAlign.center))),
-                  DataColumn(label: SizedBox(width: 150, child: Text('Main Bush',textAlign: TextAlign.center))),
-                  DataColumn(label: SizedBox(width: 150, child: Text('Sub Bush',textAlign: TextAlign.center))),
-                ],
-                rows: List.generate(
-                  data.length,
-                      (index) {
-                    final row = data[index];
-                    return DataRow.byIndex(
-                      index: index,
-                      cells: [
-                        DataCell(Center(child: Text(row.no,style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)))),
-                        DataCell(Center(child: Text(row.moldBush,style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)))),
-                        DataCell(Center(child: Text(row.mainBush,style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)))),
-                        DataCell(Center(child: Text(row.subBush,style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)))),
-                      ],
-                    );
-                  },
-                ),
-              ),
+  Widget _animatedIcon(bool value, int rowIndex, int colIndex) {
+    return TweenAnimationBuilder<double>(
+      tween: Tween(begin: 0.5, end: 1.0),
+      duration: Duration(milliseconds: 300 + rowIndex * 50 + colIndex * 30),
+      curve: Curves.elasticOut,
+      builder: (context, scale, child) {
+        return Transform.scale(
+          scale: scale,
+          child: child,
+        );
+      },
+      child: Container(
+        width: 30,
+        height: 30,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: value
+              ? const Color(0xFF1DB954) // xanh lá đậm
+              : const Color(0xFFE53935), // đỏ đậm
+          boxShadow: [
+            BoxShadow(
+              color: value
+                  ? const Color(0xFF1DB954).withOpacity(0.45)
+                  : const Color(0xFFE53935).withOpacity(0.40),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
             ),
-          ),
+          ],
         ),
-      );
-    }
+        child: Icon(
+          value ? Icons.check_rounded : Icons.close_rounded,
+          color: Colors.white, // icon trắng nổi bật trên nền màu
+          size: 18,
+        ),
+      ),
+    );
   }
+}

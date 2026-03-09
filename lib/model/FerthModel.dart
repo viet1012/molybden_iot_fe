@@ -9,8 +9,9 @@ class FerthModel {
   // Chuyển từ JSON sang Object
   factory FerthModel.fromJson(Map<String, dynamic> json) {
     return FerthModel(
-      // name: json['name'],
-      lots: (json['lots'] as List).map((e) => LotModel.fromJson(e)).toList(),
+      lots: (json['lots'] ?? [])
+          .map<LotModel>((e) => LotModel.fromJson(e))
+          .toList(),
     );
   }
 

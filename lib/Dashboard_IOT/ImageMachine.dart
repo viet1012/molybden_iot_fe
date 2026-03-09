@@ -224,13 +224,13 @@
 //
 // }
 
-import 'dart:async';
-
-import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-
-import 'error_items_provider.dart';
-
+// import 'dart:async';
+//
+// import 'package:flutter/material.dart';
+// import 'package:provider/provider.dart';
+//
+// import 'error_items_provider.dart';
+//
 // class ImageMachine extends StatefulWidget {
 //   const ImageMachine({Key? key}) : super(key: key);
 //
@@ -260,7 +260,7 @@ import 'error_items_provider.dart';
 //     // [0.5, 0.9, 90, 60, "A-1413"],
 //     // [0.57, 0.9, 60, 60, "A-1639"],
 //     // [0.74, 0.9, 60, 60, "A-1587"],
-//     [0.79, 0.8, 60, 60, "A-1498"],
+//     [0.4, 0.45, 60, 60, "A-2172"],
 //     // [0.17, 0.86, 50, 50, "A-1426"],
 //     // [0.13, 0.76, 50, 50, "A-1427"],
 //     // [0.385, 0.42, 110, 145, "Wash_2"],
@@ -348,7 +348,7 @@ import 'error_items_provider.dart';
 //         children: [
 //           // Hình ảnh máy
 //           Image.asset(
-//             'assets/machine_update.png',
+//             'assets/layout.png',
 //             key: _imageKey,
 //             fit: BoxFit.contain,
 //           ),
@@ -397,9 +397,12 @@ import 'error_items_provider.dart';
 //     return indicators;
 //   }
 // }
+
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
+import 'error_items_provider.dart';
 
 class ImageMachine extends StatefulWidget {
   const ImageMachine({Key? key}) : super(key: key);
@@ -444,163 +447,53 @@ class _ImageMachineState extends State<ImageMachine> {
   // ===============================
   static const List<MachinePoint> validPoints = [
     MachinePoint(
-        xPercent: 0.385,
-        yPercent: 0.42,
-        width: 130,
-        height: 150,
-        machineId: "A-2757"),
-    MachinePoint(
-        xPercent: 0.48,
-        yPercent: 0.40,
-        width: 60,
-        height: 70,
-        machineId: "A-1520"),
-    MachinePoint(
-        xPercent: 0.54,
-        yPercent: 0.25,
-        width: 80,
-        height: 60,
-        machineId: "A-1389"),
-    MachinePoint(
-        xPercent: 0.67,
-        yPercent: 0.28,
-        width: 130,
-        height: 80,
-        machineId: "A-2402"),
-    MachinePoint(
-        xPercent: 0.75,
-        yPercent: 0.20,
-        width: 78,
-        height: 75,
-        machineId: "A-2400"),
-    MachinePoint(
-        xPercent: 0.87,
-        yPercent: 0.28,
-        width: 130,
-        height: 80,
-        machineId: "A-2002"),
-    MachinePoint(
-        xPercent: 0.86,
-        yPercent: 0.42,
-        width: 70,
-        height: 75,
-        machineId: "A-1499"),
-    MachinePoint(
-        xPercent: 0.87,
-        yPercent: 0.57,
-        width: 130,
-        height: 80,
-        machineId: "A-1412"),
-    MachinePoint(
-        xPercent: 0.87,
-        yPercent: 0.82,
-        width: 130,
-        height: 80,
-        machineId: "A-1592"),
-    MachinePoint(
-        xPercent: 0.48,
-        yPercent: 0.60,
-        width: 80,
-        height: 80,
-        machineId: "A-1596"),
-    MachinePoint(
-        xPercent: 0.57,
-        yPercent: 0.42,
-        width: 60,
-        height: 60,
-        machineId: "A-2842"),
-    MachinePoint(
-        xPercent: 0.41,
-        yPercent: 0.80,
-        width: 90,
-        height: 60,
-        machineId: "A-1999"),
-    MachinePoint(
-        xPercent: 0.50,
-        yPercent: 0.80,
-        width: 90,
-        height: 60,
-        machineId: "A-1413"),
-    MachinePoint(
-        xPercent: 0.57,
-        yPercent: 0.84,
-        width: 90,
-        height: 90,
-        machineId: "A-1639"),
-    MachinePoint(
-        xPercent: 0.74,
-        yPercent: 0.80,
-        width: 60,
-        height: 60,
-        machineId: "A-1587"),
-    MachinePoint(
-        xPercent: 0.79,
-        yPercent: 0.80,
-        width: 60,
-        height: 60,
-        machineId: "A-1498"),
-    MachinePoint(
-        xPercent: 0.17,
-        yPercent: 0.86,
-        width: 50,
-        height: 50,
+        xPercent: 0.21,
+        yPercent: 0.17,
+        width: 120,
+        height: 120,
         machineId: "A-1426"),
     MachinePoint(
-        xPercent: 0.13,
-        yPercent: 0.76,
-        width: 50,
-        height: 50,
-        machineId: "A-1427"),
-
-    // Process labels
+        xPercent: 0.23,
+        yPercent: 0.45,
+        width: 120,
+        height: 120,
+        machineId: "A-2172"),
     MachinePoint(
-        xPercent: 0.385,
-        yPercent: 0.42,
-        width: 110,
-        height: 145,
-        machineId: "Wash_2"),
+        xPercent: 0.4,
+        yPercent: 0.45,
+        width: 120,
+        height: 120,
+        machineId: "A-1450"),
     MachinePoint(
-        xPercent: 0.75,
-        yPercent: 0.86,
-        width: 78,
-        height: 75,
-        machineId: "Temper_1"),
+        xPercent: 0.8,
+        yPercent: 0.8,
+        width: 120,
+        height: 120,
+        machineId: "A-2757"),
     MachinePoint(
-        xPercent: 0.75,
-        yPercent: 0.86,
-        width: 78,
-        height: 75,
-        machineId: "Temper_2"),
+        xPercent: 0.31,
+        yPercent: 0.45,
+        width: 120,
+        height: 120,
+        machineId: "A-1497"),
     MachinePoint(
-        xPercent: 0.73,
-        yPercent: 0.51,
-        width: 76,
-        height: 76,
-        machineId: "Cool_Fan_1_L"),
-    MachinePoint(
-        xPercent: 0.80,
-        yPercent: 0.51,
-        width: 76,
-        height: 76,
-        machineId: "Cool_Fan_1_R"),
-    MachinePoint(
-        xPercent: 0.65,
-        yPercent: 0.51,
-        width: 80,
-        height: 80,
-        machineId: "Cool_Fan_2"),
-    MachinePoint(
-        xPercent: 0.70,
-        yPercent: 0.51,
-        width: 80,
-        height: 80,
+        xPercent: 0.66,
+        yPercent: 0.27,
+        width: 120,
+        height: 120,
         machineId: "Cool_Fan_3"),
     MachinePoint(
-        xPercent: 0.73,
-        yPercent: 0.51,
-        width: 80,
-        height: 80,
-        machineId: "Cool_Fan_4"),
+        xPercent: 0.33,
+        yPercent: 0.1,
+        width: 120,
+        height: 120,
+        machineId: "Cool_Fan_2"),
+    MachinePoint(
+        xPercent: 0.33,
+        yPercent: 0.1,
+        width: 120,
+        height: 120,
+        machineId: "Cool_Fan_1"),
   ];
 
   // ===============================
@@ -690,16 +583,18 @@ class _ImageMachineState extends State<ImageMachine> {
       builder: (context, provider, _) {
         final hasAnyErrors = provider.errorItemsByRowId.isNotEmpty;
 
-        // start/stop blinking based on provider state
-        _ensureBlinkingRunning(hasAnyErrors);
+        // ✅ CHẠY SAU BUILD
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!mounted) return;
 
-        // optional: compute highlight target
-        _handleExternalSelection(provider);
+          _ensureBlinkingRunning(hasAnyErrors);
+          _handleExternalSelection(provider);
+        });
 
         return Stack(
           children: [
             Image.asset(
-              'assets/machine_update.png',
+              'assets/layout.png',
               key: _imageKey,
               fit: BoxFit.contain,
             ),
@@ -716,14 +611,19 @@ class _ImageMachineState extends State<ImageMachine> {
   List<Widget> _buildIndicators(ErrorItemsProvider provider) {
     final imageSize = _getImageSize();
     if (imageSize == null) return [];
-
+    // DEBUG
+    // print("===== PROVIDER MACHINES =====");
+    // provider.errorItemsByRowId.forEach((key, value) {
+    //   print("rowId: $key  machineId: ${value['machineId']}");
+    // });
     final indicators = <Widget>[];
 
     for (int i = 0; i < validPoints.length; i++) {
       final point = validPoints[i];
-
       final rowIdsForMachine = provider.errorItemsByRowId.entries
-          .where((e) => e.value['machineId'] == point.machineId)
+          .where((e) =>
+              (e.value['machineId'] ?? '').toString().trim().toUpperCase() ==
+              point.machineId.trim().toUpperCase())
           .map((e) => e.key)
           .toList();
 

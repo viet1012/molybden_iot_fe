@@ -78,7 +78,7 @@ class _DashboardIOTScreenState extends State<DashboardIOTScreen> {
     return ChangeNotifierProvider(
       create: (_) => ErrorItemsProvider(),
       child: Scaffold(
-        backgroundColor: Colors.black.withOpacity(.7),
+        backgroundColor: Colors.white70.withOpacity(.7),
         appBar: PreferredSize(
           preferredSize: const Size.fromHeight(kToolbarHeight),
           child: AppBar(
@@ -132,15 +132,9 @@ class _DashboardIOTScreenState extends State<DashboardIOTScreen> {
                       icon: const Icon(Icons.info, color: Colors.black),
                       onPressed: () {
                         setState(() {
-                          _showDetails = !_showDetails;
+                          _showRulesPopup();
                         });
                       },
-                    ),
-                    IconButton(
-                      hoverColor: Colors.white,
-                      onPressed: () => StatusLegendPopup.show(context),
-                      icon: const Icon(Icons.help_outline,
-                          color: Colors.black), // Icon thông tin
                     ),
                   ],
                 ),
@@ -205,159 +199,181 @@ class _DashboardIOTScreenState extends State<DashboardIOTScreen> {
                     stream: ApiService().iotStream,
                     tableBuilder: (data) => MolybdenTable(ferthList: data),
                   ),
-
-                  // Row(
-                  //   children: [
-                  //     Expanded(
-                  //       child: Column(
-                  //         children: [
-                  //           const Shimmer(
-                  //             period: Duration(milliseconds: 9000),
-                  //             gradient: LinearGradient(
-                  //               colors: [
-                  //                 Color(0xFF0074D9), // Black (bóng tối nền)
-                  //                 Color(0xFFE0E0E0), // Light gray (ánh sáng)
-                  //                 Color(0xFF1067C1), // Quay về tối
-                  //               ],
-                  //               stops: [0.1, 0.5, 1],
-                  //               begin: Alignment.topLeft,
-                  //               end: Alignment.bottomRight,
-                  //             ),
-                  //             child: Text(
-                  //               'Induction',
-                  //               style: TextStyle(
-                  //                   fontWeight: FontWeight.bold,
-                  //                   color: Colors.white,
-                  //                   fontSize: 20),
-                  //             ),
-                  //           ),
-                  //           buildRow(
-                  //             name: "Induction",
-                  //             titles: ["Main Post", "Mold Post"],
-                  //             stream: ApiService().iotStream2,
-                  //             tableBuilder: (data) =>
-                  //                 FerthMainMoldTable(ferthList: data),
-                  //           ),
-                  //         ],
-                  //       ),
-                  //     ),
-                  //     const SizedBox(width: 8),
-                  //     SizedBox(
-                  //       width: MediaQuery.of(context).size.width / 2.3,
-                  //       child: const ImageMachine(),
-                  //     ),
-                  //   ],
-                  // ),
+                  Container(
+                    width: MediaQuery.of(context).size.width,
+                    margin: const EdgeInsets.only(right: 8),
+                    child: const Align(
+                        alignment: Alignment.centerRight,
+                        child: ImageMachine()),
+                  )
                 ],
               ),
             ),
-            if (_showDetails)
-              Positioned.fill(
-                child: GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      _showDetails = false;
-                    });
-                  },
-                  child: Container(
-                    color: Colors.black.withOpacity(0.5),
-                    child: Center(
-                      child: SizedBox(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Container(
-                              decoration: BoxDecoration(
-                                color: Colors.blueAccent.withOpacity(.9),
-                                gradient: const LinearGradient(
-                                  colors: [
-                                    Colors.blueAccent,
-                                    Colors.deepPurpleAccent
-                                  ], // Gradient màu
-                                  begin: Alignment.topLeft,
-                                  end: Alignment.bottomRight,
-                                ), // Màu nền
-                                border: Border.all(
-                                  color: Colors.blueAccent, // Màu viền
-                                  width: 2.0, // Độ dày viền
-                                ),
-                                borderRadius:
-                                    BorderRadius.circular(8), // Bo tròn góc
-                              ),
-                              padding: const EdgeInsets.all(8),
-                              // Thêm padding bên trong
-                              child: const Text(
-                                "HeatGuide Rules Check",
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 26,
-                                ),
-                              ),
-                            ),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                // Flexible(
-                                //   child: MolipdenDataTableWidget(),
-                                // ),
-                                Flexible(child: RuleIotDataTableWidget()),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
           ],
         ),
       ),
     );
   }
 
+  void _showRulesPopup() {
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (context) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          insetPadding:
+              const EdgeInsets.symmetric(horizontal: 40, vertical: 24),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              maxWidth: MediaQuery.of(context).size.width * 0.75,
+              maxHeight: MediaQuery.of(context).size.height -
+                  48, // trừ insetPadding vertical * 2
+            ),
+            child: Container(
+              decoration: BoxDecoration(
+                color: const Color(0xFF0F2027),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: Colors.blueAccent.withOpacity(.6),
+                  width: 2,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(.7),
+                    blurRadius: 25,
+                    spreadRadius: 3,
+                  )
+                ],
+              ),
+              child: Column(
+                mainAxisSize:
+                    MainAxisSize.min, // ← key fix: không ép full height
+                children: [
+                  /// HEADER
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                    decoration: const BoxDecoration(
+                      borderRadius:
+                          BorderRadius.vertical(top: Radius.circular(14)),
+                      gradient: LinearGradient(
+                        colors: [
+                          Color(0xFF1197D1),
+                          Color(0xFF2C515E),
+                          Color(0xFF001F3F),
+                        ],
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.rule, color: Colors.white),
+                        const SizedBox(width: 10),
+                        const Text(
+                          "Molybden Rules Check",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const Spacer(),
+                        IconButton(
+                          icon: const Icon(Icons.close, color: Colors.white),
+                          onPressed: () => Navigator.pop(context),
+                        )
+                      ],
+                    ),
+                  ),
+
+                  /// BODY — Expanded để chiếm hết phần còn lại
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.all(8),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const FerthRuleTable(),
+                      ),
+                    ),
+                  ),
+
+                  /// FOOTER
+                  const Padding(
+                    padding: EdgeInsets.all(8),
+                    child: Text(
+                      "System rule validation for Molybden process",
+                      style: TextStyle(color: Colors.white70, fontSize: 14),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   Widget buildTableFromStream(Stream<List<FerthModel>> stream,
       Widget Function(List<FerthModel>) tableBuilder) {
     return Card(
-      elevation: 10,
-      // Tạo hiệu ứng đổ bóng
-      color: Colors.white,
-      shadowColor: Colors.blue.shade900,
-      shape: const RoundedRectangleBorder(
-        side: BorderSide(color: Colors.blueAccent, width: 1), // Viền xanh
-      ),
-      // margin: const EdgeInsets.all(8),
-      child:  SizedBox(
-              height: MediaQuery.of(context).size.height / 3.5,
-              child: StreamBuilder<List<FerthModel>>(
-                stream: stream,
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(child: CircularProgressIndicator());
-                  } else if (snapshot.hasError) {
-                    return Center(child: Text("Error: ${snapshot.error}"));
-                  } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                    return Container(
-                      alignment: Alignment.center,
-                      child: const Text(
-                        "🚫 No Data Available",
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.redAccent,
-                        ),
+        elevation: 10,
+        color: Colors.white, // nền card dark navy
+        shadowColor: const Color(0xFF1197D1),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+          side: BorderSide(
+            color: const Color(0xFF1197D1).withOpacity(0.7),
+            width: 1.5,
+          ),
+        ),
+        child: SizedBox(
+          height: MediaQuery.of(context).size.height / 2.2,
+          child: StreamBuilder<List<FerthModel>>(
+            stream: stream,
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(child: CircularProgressIndicator());
+              } else if (snapshot.hasError) {
+                return Center(child: Text("Error: ${snapshot.error}"));
+              } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                return Container(
+                  alignment: Alignment.center,
+                  child: const Shimmer(
+                    period: Duration(milliseconds: 3000),
+                    gradient: LinearGradient(
+                      colors: [
+                        Color(0xFF3F0000), // Đỏ đậm
+                        Color(0xFF5C0000), // Đỏ trung bình
+                        Color(0xFFD90000), // Đỏ sáng
+                        Color(0xFFFF4136), // Đỏ cam
+                        Color(0xFFD90000), // Đỏ sáng
+                        Color(0xFF5C0000), // Đỏ trung bình
+                        Color(0xFF3F0000), // Đỏ đậm
+                      ],
+                      stops: [0.0, 0.15, 0.3, 0.5, 0.7, 0.85, 1.0],
+                      begin: Alignment.centerLeft,
+                      end: Alignment.centerRight,
+                    ),
+                    child: Text(
+                      "🚫 No Data Available",
+                      style: TextStyle(
+                        fontSize: 32,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.redAccent,
                       ),
-                    );
-                  } else {
-                    return tableBuilder(snapshot.data!);
-                  }
-                },
-              ),
-            )
-
-    );
+                    ),
+                  ),
+                );
+              } else {
+                return tableBuilder(snapshot.data!);
+              }
+            },
+          ),
+        ));
   }
 
   Widget borderedTitle({
