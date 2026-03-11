@@ -55,11 +55,11 @@ class _MolybdenTableState extends State<MolybdenTable> {
     "Wash_1",
     "Dry_1",
     "Cool_Fan_1",
-    "Molipden 1",
+    "Molybden_1",
     "Vacuum",
     "Dry_2",
     "Cool_Fan_2",
-    "Molipden 2",
+    "Molybden_2",
     "Dry_3",
     "Cool_Fan_3",
     "1H_Oil_Hot",
@@ -72,11 +72,11 @@ class _MolybdenTableState extends State<MolybdenTable> {
     "Wash_1": 60,
     "Dry_1": 60,
     "Cool_Fan_1": 30,
-    "Molipden 1": 60,
+    "Molybden_1": 60,
     "Vacuum": 30,
     "Dry_2": 3,
     "Cool_Fan_2": 10,
-    "Molipden 2": 60,
+    "Molybden_2": 60,
     "Dry_3": 60, // hoặc 90 nếu máy chạy lâu
     "Cool_Fan_3": 20,
     "1H_Oil_Hot": 60,
@@ -120,6 +120,18 @@ class _MolybdenTableState extends State<MolybdenTable> {
   // ===============================
   // ABNORMAL STATUS (for sorting)
   // ===============================
+  // Lấy thời gian đến GIÂY
+  DateTime toSecond(DateTime t) {
+    return DateTime(
+      t.year,
+      t.month,
+      t.day,
+      t.hour,
+      t.minute,
+      t.second,
+    );
+  }
+
   AbnormalStatus getItemAbnormalStatus(
     ItemModel item,
     DateTime previousFinishTime, {
@@ -135,31 +147,34 @@ class _MolybdenTableState extends State<MolybdenTable> {
     bool isError = false;
     bool isOverdue = false;
 
-    // 1) Sai thứ tự
-    if (startTime != null && startTime.isBefore(previousFinishTime)) {
-      isError = true;
+    /// 1️⃣ Sai thứ tự process
+
+    if (startTime != null) {
+      final startSec = toSecond(startTime);
+      final prevSec = toSecond(previousFinishTime);
+
+      if (startSec.isBefore(prevSec)) {
+        isError = true;
+
+        // debugPrint(
+        //   "🚨 ERROR ORDER | STEP=$checkType "
+        //   "start=$startSec previousFinish=$prevSec",
+        // );
+      }
     }
 
-    // 2) OilShower: <= 60 phút sau Quench, và không được trước Quench
-    if (checkType == "OilShower" &&
-        startTime != null &&
-        quenchFinishTime != null) {
-      final diff = startTime.difference(quenchFinishTime).inMinutes;
-      if (diff > 60 || diff < 0) isError = true;
-    }
-
-    // 3) Cool_Fan_3: <= 24h sau OilShower, và không được trước OilShower
-    if (checkType == "Cool_Fan_3" &&
-        startTime != null &&
-        oilShowerFinishTime != null) {
-      final diff = startTime.difference(oilShowerFinishTime).inMinutes;
-      if (diff > 1440 || diff < 0) isError = true;
-    }
-
-    // 4) Overdue: start != null, finish == null, estimated > 0
+    /// 2️⃣ Quá thời gian chưa finish
     if (startTime != null && finishTime == null && estimatedTime > 0) {
       final expectedFinish = startTime.add(Duration(minutes: estimatedTime));
-      if (DateTime.now().isAfter(expectedFinish)) isOverdue = true;
+
+      if (DateTime.now().isAfter(expectedFinish)) {
+        isOverdue = true;
+
+        // debugPrint("⏰ OVERDUE | STEP=$checkType "
+        //     "start=$startTime "
+        //     "expectedFinish=$expectedFinish "
+        //     "now=${DateTime.now()}");
+      }
     }
 
     return AbnormalStatus(isError: isError, isOverdue: isOverdue);
@@ -195,8 +210,25 @@ class _MolybdenTableState extends State<MolybdenTable> {
     return AbnormalCount(errorCount: errorCount, overdueCount: overdueCount);
   }
 
+  int getCurrentStepIndex(LotModel lot) {
+    for (int i = 0; i < lot.items.length; i++) {
+      final item = lot.items[i];
+
+      if (item.startTime != null && item.finishTime == null) {
+        return i; // step đang chạy
+      }
+
+      if (item.startTime == null) {
+        return i; // step tiếp theo
+      }
+    }
+
+    return lot.items.length; // finished
+  }
+
   List<LotModel> sortLotsByErrorsAndSizeAndTime(List<FerthModel> ferthList) {
     final allLots = <LotModel>[];
+
     for (final ferth in ferthList) {
       allLots.addAll(ferth.lots);
     }
@@ -205,64 +237,68 @@ class _MolybdenTableState extends State<MolybdenTable> {
       final abnormalA = countAbnormalItems(a.items);
       final abnormalB = countAbnormalItems(b.items);
 
-      if (abnormalA.errorCount != abnormalB.errorCount) {
-        return abnormalB.errorCount.compareTo(abnormalA.errorCount);
-      }
+      /// 1️⃣ overdue
       if (abnormalA.overdueCount != abnormalB.overdueCount) {
         return abnormalB.overdueCount.compareTo(abnormalA.overdueCount);
       }
+
+      /// 2️⃣ error
+      if (abnormalA.errorCount != abnormalB.errorCount) {
+        return abnormalB.errorCount.compareTo(abnormalA.errorCount);
+      }
+
+      /// 3️⃣ số công đoạn
       if (a.items.length != b.items.length) {
         return b.items.length.compareTo(a.items.length);
       }
 
-      final allFinishA = a.items.every((e) => e.finishTime != null);
-      final allFinishB = b.items.every((e) => e.finishTime != null);
-      if (allFinishA != allFinishB) return allFinishB ? 1 : -1;
+      /// 4️⃣ step hiện tại
+      final stepA = getCurrentStepIndex(a);
+      final stepB = getCurrentStepIndex(b);
 
-      final unfinishedA = a.items.firstWhereOrNull((e) => e.finishTime == null);
-      final unfinishedB = b.items.firstWhereOrNull((e) => e.finishTime == null);
-      if (unfinishedA?.startTime != null && unfinishedB?.startTime != null) {
-        final c = unfinishedA!.startTime!.compareTo(unfinishedB!.startTime!);
-        if (c != 0) return c;
+      if (stepA != stepB) {
+        return stepB.compareTo(stepA);
       }
 
-      final durationsA = a.items
-          .where((e) => e.startTime != null && e.finishTime != null)
-          .map((e) => e.finishTime!.difference(e.startTime!).inMilliseconds)
-          .toList();
-      final durationsB = b.items
-          .where((e) => e.startTime != null && e.finishTime != null)
-          .map((e) => e.finishTime!.difference(e.startTime!).inMilliseconds)
-          .toList();
-
-      if (durationsA.isNotEmpty && durationsB.isNotEmpty) {
-        final minA = durationsA.reduce(min);
-        final minB = durationsB.reduce(min);
-        final c = minA.compareTo(minB);
-        if (c != 0) return c;
-      } else if (durationsA.isNotEmpty && durationsB.isEmpty) {
-        return -1;
-      } else if (durationsA.isEmpty && durationsB.isNotEmpty) {
-        return 1;
-      }
-
-      final startsA = a.items
+      /// 5️⃣ earliest start
+      final earliestA = a.items
           .where((e) => e.startTime != null)
           .map((e) => e.startTime!)
-          .toList();
-      final startsB = b.items
+          .reduce((a, b) => a.isBefore(b) ? a : b);
+
+      final earliestB = b.items
           .where((e) => e.startTime != null)
           .map((e) => e.startTime!)
-          .toList();
+          .reduce((a, b) => a.isBefore(b) ? a : b);
 
-      if (startsA.isEmpty && startsB.isEmpty) return 0;
-      if (startsA.isEmpty) return 1;
-      if (startsB.isEmpty) return -1;
-
-      final earliestA = startsA.reduce((x, y) => y.isBefore(x) ? y : x);
-      final earliestB = startsB.reduce((x, y) => y.isBefore(x) ? y : x);
       return earliestA.compareTo(earliestB);
     });
+
+    /// 🔎 DEBUG RESULT
+    debugPrint("====== SORT RESULT ======");
+
+    for (int i = 0; i < allLots.length; i++) {
+      final lot = allLots[i];
+      final abnormal = countAbnormalItems(lot.items);
+      final step = getCurrentStepIndex(lot);
+
+      DateTime? earliestStart;
+
+      final startTimes =
+          lot.items.where((e) => e.startTime != null).map((e) => e.startTime!);
+
+      if (startTimes.isNotEmpty) {
+        earliestStart = startTimes.reduce((a, b) => a.isBefore(b) ? a : b);
+      }
+
+      // debugPrint("[$i] LOT=${lot.lot} "
+      //     "[$i] RFID=${lot.rfID_key} "
+      //     "overdue=${abnormal.overdueCount} "
+      //     "error=${abnormal.errorCount} "
+      //     "steps=${lot.items.length} "
+      //     "currentStep=$step "
+      //     "earliestStart=$earliestStart");
+    }
 
     return allLots;
   }
@@ -364,38 +400,6 @@ class _MolybdenTableState extends State<MolybdenTable> {
               const CenteredTitleText('ID'),
               const CenteredTitleText('RFID'),
               ...checkTypes.map((e) => CenteredTitleText(e)).toList(),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildHeader1(BuildContext context) {
-    return Container(
-      color: Colors.blue,
-      child: Table(
-        border: TableBorder.all(color: Colors.black45, width: 1),
-        columnWidths: _columnWidths,
-        children: const [
-          TableRow(
-            children: [
-              CenteredTitleText('ID'),
-              CenteredTitleText('RFID'),
-              CenteredTitleText('Wash_1'),
-              CenteredTitleText('Dry_1'),
-              CenteredTitleText('Cool_Fan_1'),
-              CenteredTitleText('Molipden 1'),
-              CenteredTitleText('Vacuum'),
-              CenteredTitleText('Dry_2'),
-              CenteredTitleText('Cool_Fan_2'),
-              CenteredTitleText('Molipden 2'),
-              CenteredTitleText('Dry_3'),
-              CenteredTitleText('Cool_Fan_3'),
-              CenteredTitleText('1H_Oil_Hot'),
-              CenteredTitleText('3H_Oil_Cool'),
-              CenteredTitleText('24H_Oil_Cool'),
-              CenteredTitleText('Aging_7days'),
             ],
           ),
         ],
@@ -518,11 +522,14 @@ class _MolybdenTableState extends State<MolybdenTable> {
     })();
 
     final details = (() {
-      final firstWithPo =
-          lot.info.firstWhereOrNull((e) => e.poreqnosWithQty.isNotEmpty);
-      if (firstWithPo != null)
-        return firstWithPo.poreqnosWithQty.replaceAll(' ; ', '\n');
-      return 'No PO info';
+      final list = lot.info
+          .where((e) => e.poreqnosWithQty.isNotEmpty)
+          .map((e) => e.poreqnosWithQty.replaceAll(' ; ', '\n'))
+          .toList();
+
+      if (list.isEmpty) return 'No PO info';
+
+      return list.join('\n');
     })();
 
     return Container(

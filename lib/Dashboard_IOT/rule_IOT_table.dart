@@ -50,7 +50,7 @@ class _FerthRuleTableState extends State<FerthRuleTable>
         mainBush: true,
         newProduct: true),
     FerthRuleRow(
-        step: "Molipden_1",
+        step: "Molybden_1",
         time: "60m",
         subBush: true,
         mainBush: true,
@@ -74,7 +74,7 @@ class _FerthRuleTableState extends State<FerthRuleTable>
         mainBush: true,
         newProduct: true),
     FerthRuleRow(
-        step: "Molipden_2",
+        step: "Molybden_2",
         time: "60m",
         subBush: true,
         mainBush: true,
@@ -107,14 +107,14 @@ class _FerthRuleTableState extends State<FerthRuleTable>
         step: "24h Cool Oil",
         time: "1440m",
         subBush: false,
-        mainBush: true,
-        newProduct: false),
+        mainBush: false,
+        newProduct: true),
     FerthRuleRow(
         step: "Aging 7day",
         time: "10080m",
-        subBush: false,
+        subBush: true,
         mainBush: false,
-        newProduct: true),
+        newProduct: false),
   ];
 
   @override

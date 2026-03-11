@@ -433,8 +433,8 @@ class _ImageMachineState extends State<ImageMachine> {
 
   static const List<MachinePoint> validPoints = [
     MachinePoint(
-        xPercent: 0.14,
-        yPercent: 0.19,
+        xPercent: 0.15,
+        yPercent: 0.2,
         width: 120,
         height: 120,
         machineId: "A-1426"),
@@ -467,7 +467,7 @@ class _ImageMachineState extends State<ImageMachine> {
         yPercent: 0.2,
         width: 120,
         height: 120,
-        machineId: "A-1394"),
+        machineId: "A-1395"),
     MachinePoint(
         xPercent: 0.45,
         yPercent: 0.42,
@@ -476,13 +476,13 @@ class _ImageMachineState extends State<ImageMachine> {
         machineId: "Cool_Fan_3"),
     MachinePoint(
         xPercent: 0.22,
-        yPercent: 0.1,
+        yPercent: 0.2,
         width: 120,
         height: 120,
         machineId: "Cool_Fan_2"),
     MachinePoint(
         xPercent: 0.22,
-        yPercent: 0.1,
+        yPercent: 0.2,
         width: 120,
         height: 120,
         machineId: "Cool_Fan_1"),
@@ -616,7 +616,7 @@ class _ImageMachineState extends State<ImageMachine> {
         return Stack(
           children: [
             Image.asset(
-              'assets/Picture1.png',
+              'assets/Picture3.png',
               key: _imageKey,
               fit: BoxFit.contain,
             ),
