@@ -7,16 +7,17 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:shimmer/shimmer.dart';
 
-import '../api_service.dart';
-import '../model/FerthModel.dart';
-import 'Animated_induction_text.dart';
-import 'ImageMachine.dart';
-import 'MolybdenIOT/molybden_main_bush_table.dart';
-import 'MolybdenIOT/molybden_sub_bush_table.dart';
-import 'SimpleClockIcon.dart';
-import 'error_items_provider.dart';
-import 'ferth_main_mold_table.dart';
-import 'ferth_mold_main_table.dart';
+import '../../api_service.dart';
+import '../../model/FerthModel.dart';
+import '../Animated_induction_text.dart';
+import '../ImageMachine.dart';
+import '../shimmer_title.dart';
+import 'molybden_main_bush_table.dart';
+import 'molybden_sub_bush_table.dart';
+import '../SimpleClockIcon.dart';
+import '../error_items_provider.dart';
+import '../ferth_main_mold_table.dart';
+import '../ferth_mold_main_table.dart';
 
 class DashboardIOTScreen extends StatefulWidget {
   const DashboardIOTScreen({super.key});
@@ -106,31 +107,8 @@ class _DashboardIOTScreenState extends State<DashboardIOTScreen> {
                         children: [
                           Row(
                             children: [
-                              const Shimmer(
-                                period: Duration(milliseconds: 5000),
-                                gradient: LinearGradient(
-                                  colors: [
-                                    Color(0xFF001F3F),
-                                    Color(0xFF003D5C),
-                                    Color(0xFF0074D9),
-                                    Color(0xFF39CCCC),
-                                    Color(0xFF0074D9),
-                                    Color(0xFF003D5C),
-                                    Color(0xFF001F3F),
-                                  ],
-                                  stops: [0.0, 0.15, 0.3, 0.5, 0.7, 0.85, 1.0],
-                                  begin: Alignment.centerLeft,
-                                  end: Alignment.centerRight,
-                                ),
-                                child: Text(
-                                  'Dashboard Molybden',
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 20,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ),
+                              const ShimmerTitle(
+                                  text: 'Dashboard Molybden', fontSize: 22),
                               const SizedBox(width: 8),
                               IconButton(
                                 icon:
@@ -312,31 +290,7 @@ class _DashboardIOTScreenState extends State<DashboardIOTScreen> {
         padding: const EdgeInsets.all(2),
         child: Column(
           children: [
-            const Shimmer(
-              period: Duration(milliseconds: 5000),
-              gradient: LinearGradient(
-                colors: [
-                  Color(0xFF001F3F),
-                  Color(0xFF003D5C),
-                  Color(0xFF0074D9),
-                  Color(0xFF39CCCC),
-                  Color(0xFF0074D9),
-                  Color(0xFF003D5C),
-                  Color(0xFF001F3F),
-                ],
-                stops: [0.0, 0.15, 0.3, 0.5, 0.7, 0.85, 1.0],
-                begin: Alignment.centerLeft,
-                end: Alignment.centerRight,
-              ),
-              child: Text(
-                'Sub Bush',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 18,
-                  color: Colors.white,
-                ),
-              ),
-            ),
+            const ShimmerTitle(text: 'Sub Bush'),
 
             /// SubBush
             Expanded(
@@ -346,32 +300,8 @@ class _DashboardIOTScreenState extends State<DashboardIOTScreen> {
                 (data) => MolybdenTable(ferthList: data),
               ),
             ),
-            const Shimmer(
-              period: Duration(milliseconds: 5000),
-              gradient: LinearGradient(
-                colors: [
-                  Color(0xFF001F3F),
-                  Color(0xFF003D5C),
-                  Color(0xFF0074D9),
-                  Color(0xFF39CCCC),
-                  Color(0xFF0074D9),
-                  Color(0xFF003D5C),
-                  Color(0xFF001F3F),
-                ],
-                stops: [0.0, 0.15, 0.3, 0.5, 0.7, 0.85, 1.0],
-                begin: Alignment.centerLeft,
-                end: Alignment.centerRight,
-              ),
-              child: Text(
-                'Main Bush',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 18,
-                  color: Colors.white,
-                ),
-              ),
-            ),
-            // const SizedBox(height: 8),
+
+            const ShimmerTitle(text: 'Main Bush'),
 
             /// MainBush + ImageMachine cùng hàng
             Expanded(
