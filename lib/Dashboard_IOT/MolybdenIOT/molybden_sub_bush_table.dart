@@ -275,7 +275,7 @@ class _MolybdenTableState extends State<MolybdenTable> {
     });
 
     /// 🔎 DEBUG RESULT
-    debugPrint("====== SORT RESULT ======");
+    // debugPrint("====== SORT RESULT ======");
 
     for (int i = 0; i < allLots.length; i++) {
       final lot = allLots[i];
@@ -1024,7 +1024,7 @@ class _MolybdenTableState extends State<MolybdenTable> {
 
       if (!stillOverdue &&
           errorItemsProvider.errorItemsByRowId.containsKey(rowId)) {
-        print("Remove rowId error: $rowId");
+        // print("Remove rowId error: $rowId");
         errorItemsProvider.removeError(rowId);
       }
 

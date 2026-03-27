@@ -1,51 +1,56 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 class ErrorItemsProvider with ChangeNotifier {
-  // Sử dụng rowId làm key, lưu trữ lỗi cho từng rowId.
-  Map<String, Map<String, dynamic>> _errorItemsByRowId = {};
+  final Map<String, Map<String, dynamic>> _errorItemsByRowId = {};
+  final Set<String> abnormalLots = {};
 
   Map<String, Map<String, dynamic>> get errorItemsByRowId => _errorItemsByRowId;
 
-  final Set<String> abnormalLots = {}; // ✅ lưu các lot đã gửi lỗi
+  void updateErrorItems(
+    String uniqueRowId,
+    String machineId,
+    String checkType,
+    String lot,
+    List<String> errors,
+  ) {
+    _errorItemsByRowId[uniqueRowId] = {
+      'rowId': uniqueRowId,
+      'machineId': machineId,
+      'checkType': checkType,
+      'lot': lot,
+      'errors': errors,
+    };
 
-  void updateErrorItems(String rowId, String machineId, String checkType,
-      String lot, List<String> errors) {
-    // Thêm hoặc cập nhật lỗi cho rowId
-    if (!_errorItemsByRowId.containsKey(rowId)) {
-      _errorItemsByRowId[rowId] = {
-        'machineId': machineId,
-        'checkType': checkType,
-        'lot': lot,
-        'errors': errors
-      };
-    } else {
-      _errorItemsByRowId[rowId]!['errors'] = errors;
-    }
+    debugPrint(
+      '[Provider][ADD/UPDATE] key=$uniqueRowId | machine=$machineId | step=$checkType | lot=$lot | total=${_errorItemsByRowId.length}',
+    );
+
     notifyListeners();
   }
 
-  // Xóa lỗi của một rowId
-  void removeError(String rowId) {
-    if (errorItemsByRowId.containsKey(rowId)) {
-      // print(
-      //     "🛑 Xóa khỏi Provider: $rowId - Trước khi xóa: ${errorItemsByRowId.keys}");
-      errorItemsByRowId.remove(rowId);
+  void removeError(String uniqueRowId) {
+    final removed = _errorItemsByRowId.remove(uniqueRowId);
+    if (removed != null) {
+      debugPrint(
+        '[Provider][REMOVE] key=$uniqueRowId | total=${_errorItemsByRowId.length}',
+      );
       notifyListeners();
-      //print("✅ Sau khi xóa: ${errorItemsByRowId.keys}");
     }
   }
 
   void clearErrors() {
-    errorItemsByRowId.clear();
+    _errorItemsByRowId.clear();
+    abnormalLots.clear();
+    debugPrint('[Provider][CLEAR ALL]');
     notifyListeners();
   }
 
-  // ✅ Đánh dấu lot đã gửi lỗi
   void markAbnormal(String lotId) {
     abnormalLots.add(lotId);
+    debugPrint('[Provider][MARK ABNORMAL] lot=$lotId');
   }
 
-  // ✅ Kiểm tra đã gửi lỗi chưa
   bool isAlreadyAbnormal(String lotId) {
     return abnormalLots.contains(lotId);
   }

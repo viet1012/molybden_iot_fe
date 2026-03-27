@@ -443,13 +443,13 @@ class _ImageMachineState extends State<ImageMachine> {
         yPercent: 0.8,
         width: 120,
         height: 120,
-        machineId: "A-2172"),
+        machineId: "Molybden_1"),
     MachinePoint(
         xPercent: 0.21,
         yPercent: 0.8,
         width: 120,
         height: 120,
-        machineId: "A-1497"),
+        machineId: "Molybden_2"),
     MachinePoint(
         xPercent: 0.27,
         yPercent: 0.8,
@@ -613,15 +613,22 @@ class _ImageMachineState extends State<ImageMachine> {
           _handleExternalSelection(provider);
         });
 
-        return Stack(
-          children: [
-            Image.asset(
-              'assets/Picture3.png',
-              key: _imageKey,
-              fit: BoxFit.contain,
-            ),
-            ..._buildIndicators(provider),
-          ],
+        return SizedBox.expand(
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              return Stack(
+                fit: StackFit.expand,
+                children: [
+                  Image.asset(
+                    'assets/Picture3.png',
+                    key: _imageKey,
+                    fit: BoxFit.fill,
+                  ),
+                  ..._buildIndicators(provider),
+                ],
+              );
+            },
+          ),
         );
       },
     );

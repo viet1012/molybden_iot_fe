@@ -11,7 +11,8 @@ import '../api_service.dart';
 import '../model/FerthModel.dart';
 import 'Animated_induction_text.dart';
 import 'ImageMachine.dart';
-import 'MolybdenIOT/molybden_table.dart';
+import 'MolybdenIOT/molybden_main_bush_table.dart';
+import 'MolybdenIOT/molybden_sub_bush_table.dart';
 import 'SimpleClockIcon.dart';
 import 'error_items_provider.dart';
 import 'ferth_main_mold_table.dart';
@@ -28,11 +29,11 @@ class _DashboardIOTScreenState extends State<DashboardIOTScreen> {
   late Future<List<FerthModel>> futureData;
   late Future<List<FerthModel>> futureData1;
 
-  Timer? _timer; // 🕒 Lưu trữ Timer
+  Timer? _timer;
   bool _showDetails = false;
   late DateTime _currentTime;
 
-  DateTime? _lastUpdateTime; // Thời gian cập nhật cuối cùng
+  DateTime? _lastUpdateTime;
 
   StreamSubscription<List<FerthModel>>? _streamSubscription;
 
@@ -40,15 +41,16 @@ class _DashboardIOTScreenState extends State<DashboardIOTScreen> {
   void initState() {
     super.initState();
     _currentTime = DateTime.now();
-    _timer = Timer.periodic(const Duration(seconds: 1), (Timer t) {
-      setState(() {
-        _currentTime = DateTime.now();
-      });
-    });
-    // ApiService().startFetchingIOT();
 
-    // Lắng nghe sự kiện từ stream
-    _streamSubscription = ApiService().iotStream.listen((data) {
+    _timer = Timer.periodic(const Duration(seconds: 1), (Timer t) {
+      if (mounted) {
+        setState(() {
+          _currentTime = DateTime.now();
+        });
+      }
+    });
+
+    _streamSubscription = ApiService().subBushIotStream.listen((data) {
       if (mounted) {
         setState(() {
           _lastUpdateTime = DateTime.now();
@@ -60,8 +62,7 @@ class _DashboardIOTScreenState extends State<DashboardIOTScreen> {
 
   @override
   void dispose() {
-    ApiService()
-        .dispose(); // 🛑 Đảm bảo dừng StreamController để tránh rò rỉ bộ nhớ
+    _streamSubscription?.cancel();
     _timer?.cancel();
     super.dispose();
   }
@@ -75,277 +76,338 @@ class _DashboardIOTScreenState extends State<DashboardIOTScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => ErrorItemsProvider(),
-      child: Scaffold(
-        backgroundColor: Colors.white70.withOpacity(.7),
-        appBar: PreferredSize(
-          preferredSize: const Size.fromHeight(kToolbarHeight),
-          child: AppBar(
-              flexibleSpace: Container(
-                decoration: const BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      Color(0xFFF4F4F4), // Xanh đen
-                      Color(0xFF2C515E), // Xanh navy xám
-                      Color(0xFF1197D1), // Xanh xám cổ điển
-                    ],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
+    return Scaffold(
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(kToolbarHeight),
+        child: AppBar(
+            flexibleSpace: Container(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    Color(0xFFF4F4F4),
+                    Color(0xFF2C515E),
+                    Color(0xFF1197D1),
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
                 ),
               ),
-              title: LayoutBuilder(
-                builder: (context, constraints) {
-                  double width = constraints.maxWidth;
+            ),
+            title: LayoutBuilder(
+              builder: (context, constraints) {
+                double width = constraints.maxWidth;
 
-                  /// SCREEN NHỎ (tablet / window nhỏ)
-                  if (width < 800) {
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        /// ROW 1
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Row(
-                              children: [
-                                const Shimmer(
-                                  period: Duration(milliseconds: 5000),
-                                  gradient: LinearGradient(
-                                    colors: [
-                                      Color(0xFF001F3F),
-                                      Color(0xFF003D5C),
-                                      Color(0xFF0074D9),
-                                      Color(0xFF39CCCC),
-                                      Color(0xFF0074D9),
-                                      Color(0xFF003D5C),
-                                      Color(0xFF001F3F),
-                                    ],
-                                    stops: [
-                                      0.0,
-                                      0.15,
-                                      0.3,
-                                      0.5,
-                                      0.7,
-                                      0.85,
-                                      1.0
-                                    ],
-                                    begin: Alignment.centerLeft,
-                                    end: Alignment.centerRight,
-                                  ),
-                                  child: Text(
-                                    'Dashboard Molybden',
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 20,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(width: 8),
-                                IconButton(
-                                  icon: const Icon(Icons.info,
-                                      color: Colors.black),
-                                  onPressed: _showRulesPopup,
-                                ),
-                              ],
-                            ),
-                            Text(
-                              DateFormat("dd/MMM HH:mm:ss")
-                                  .format(_currentTime),
-                              style: const TextStyle(
-                                  color: Colors.white, fontSize: 18),
-                            ),
-                          ],
-                        ),
-
-                        const SizedBox(height: 8),
-
-                        /// ROW 2
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Row(
-                              children: [
-                                StatusLegendPopup.buildLegendItem(
-                                    Colors.blue.withOpacity(0.8),
-                                    "Completed",
-                                    Colors.green,
-                                    Colors.white),
-                                const SizedBox(width: 16),
-                                const Row(
-                                  children: [
-                                    SimpleClockIcon(
-                                      size: 20,
-                                      color: Colors.orange,
-                                      backgroundColor: Colors.transparent,
-                                    ),
-                                    SizedBox(width: 6),
-                                    Text(
-                                      "Now",
-                                      style: TextStyle(
-                                          fontSize: 16, color: Colors.white),
-                                    )
-                                  ],
-                                ),
-                                const SizedBox(width: 16),
-                                StatusLegendPopup.buildLegendIconItem(
-                                    "Overdue",
-                                    Icons.warning_amber,
-                                    Colors.red,
-                                    Colors.white),
-                              ],
-                            ),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.end,
-                              children: [
-                                Text(
-                                  "Final: ${formatTime(_lastUpdateTime)}",
-                                  style: const TextStyle(
-                                      color: Colors.white70, fontSize: 14),
-                                ),
-                                Text(
-                                  "Next: ${formatTime(_lastUpdateTime?.add(const Duration(minutes: 1)))}",
-                                  style: const TextStyle(
-                                      color: Colors.white70, fontSize: 14),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ],
-                    );
-                  }
-
-                  /// SCREEN LỚN (desktop / dashboard TV)
-                  return Row(
+                if (width < 800) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      /// LEFT
-                      Expanded(
-                        flex: 3,
-                        child: Row(
-                          children: [
-                            const Shimmer(
-                              period: Duration(milliseconds: 5000),
-                              gradient: LinearGradient(
-                                colors: [
-                                  Color(0xFF001F3F),
-                                  Color(0xFF003D5C),
-                                  Color(0xFF0074D9),
-                                  Color(0xFF39CCCC),
-                                  Color(0xFF0074D9),
-                                  Color(0xFF003D5C),
-                                  Color(0xFF001F3F),
-                                ],
-                                stops: [0.0, 0.15, 0.3, 0.5, 0.7, 0.85, 1.0],
-                                begin: Alignment.centerLeft,
-                                end: Alignment.centerRight,
-                              ),
-                              child: Text(
-                                'Dashboard Molybden',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 24,
-                                  color: Colors.white,
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
+                            children: [
+                              const Shimmer(
+                                period: Duration(milliseconds: 5000),
+                                gradient: LinearGradient(
+                                  colors: [
+                                    Color(0xFF001F3F),
+                                    Color(0xFF003D5C),
+                                    Color(0xFF0074D9),
+                                    Color(0xFF39CCCC),
+                                    Color(0xFF0074D9),
+                                    Color(0xFF003D5C),
+                                    Color(0xFF001F3F),
+                                  ],
+                                  stops: [0.0, 0.15, 0.3, 0.5, 0.7, 0.85, 1.0],
+                                  begin: Alignment.centerLeft,
+                                  end: Alignment.centerRight,
                                 ),
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            IconButton(
-                              icon: const Icon(Icons.info, color: Colors.black),
-                              onPressed: _showRulesPopup,
-                            ),
-                          ],
-                        ),
-                      ),
-
-                      /// CENTER
-                      Expanded(
-                        flex: 4,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            StatusLegendPopup.buildLegendItem(
-                                Colors.blue.withOpacity(0.8),
-                                "Completed",
-                                Colors.green,
-                                Colors.white),
-                            const SizedBox(width: 24),
-                            const Row(
-                              children: [
-                                SimpleClockIcon(
-                                  size: 22,
-                                  color: Colors.orange,
-                                  backgroundColor: Colors.transparent,
-                                ),
-                                SizedBox(width: 10),
-                                Text(
-                                  "Now",
+                                child: Text(
+                                  'Dashboard Molybden',
                                   style: TextStyle(
-                                      fontSize: 18, color: Colors.white),
-                                )
-                              ],
-                            ),
-                            const SizedBox(width: 24),
-                            StatusLegendPopup.buildLegendIconItem("Overdue",
-                                Icons.warning_amber, Colors.red, Colors.white),
-                          ],
-                        ),
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 20,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              IconButton(
+                                icon:
+                                    const Icon(Icons.info, color: Colors.black),
+                                onPressed: _showRulesPopup,
+                              ),
+                            ],
+                          ),
+                          Text(
+                            DateFormat("dd/MMM HH:mm:ss").format(_currentTime),
+                            style: const TextStyle(
+                                color: Colors.white, fontSize: 18),
+                          ),
+                        ],
                       ),
-
-                      /// RIGHT
-                      Expanded(
-                        flex: 3,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: [
-                            Text(
-                              DateFormat("dd/MMM/yy HH:mm:ss")
-                                  .format(_currentTime),
-                              style: const TextStyle(
-                                  color: Colors.white, fontSize: 20),
-                            ),
-                            const SizedBox(width: 20),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.end,
-                              children: [
-                                Text(
-                                  "Final update: ${formatTime(_lastUpdateTime)}",
-                                  style: const TextStyle(
-                                      color: Colors.white70, fontSize: 18),
-                                ),
-                                Text(
-                                  "Next update: ${formatTime(_lastUpdateTime?.add(const Duration(minutes: 1)))}",
-                                  style: const TextStyle(
-                                      color: Colors.white70, fontSize: 18),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
+                      const SizedBox(height: 8),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
+                            children: [
+                              StatusLegendPopup.buildLegendItem(
+                                  Colors.blue.withOpacity(0.8),
+                                  "Completed",
+                                  Colors.green,
+                                  Colors.white),
+                              const SizedBox(width: 16),
+                              const Row(
+                                children: [
+                                  SimpleClockIcon(
+                                    size: 20,
+                                    color: Colors.orange,
+                                    backgroundColor: Colors.transparent,
+                                  ),
+                                  SizedBox(width: 6),
+                                  Text(
+                                    "Now",
+                                    style: TextStyle(
+                                        fontSize: 16, color: Colors.white),
+                                  )
+                                ],
+                              ),
+                              const SizedBox(width: 16),
+                              StatusLegendPopup.buildLegendIconItem(
+                                  "Overdue",
+                                  Icons.warning_amber,
+                                  Colors.red,
+                                  Colors.white),
+                            ],
+                          ),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              Text(
+                                "Final: ${formatTime(_lastUpdateTime)}",
+                                style: const TextStyle(
+                                    color: Colors.white70, fontSize: 14),
+                              ),
+                              Text(
+                                "Next: ${formatTime(_lastUpdateTime?.add(const Duration(minutes: 1)))}",
+                                style: const TextStyle(
+                                    color: Colors.white70, fontSize: 14),
+                              ),
+                            ],
+                          ),
+                        ],
                       ),
                     ],
                   );
-                },
-              )),
-        ),
-        body: Stack(
+                }
+
+                return Row(
+                  children: [
+                    Expanded(
+                      flex: 3,
+                      child: Row(
+                        children: [
+                          const Shimmer(
+                            period: Duration(milliseconds: 5000),
+                            gradient: LinearGradient(
+                              colors: [
+                                Color(0xFF001F3F),
+                                Color(0xFF003D5C),
+                                Color(0xFF0074D9),
+                                Color(0xFF39CCCC),
+                                Color(0xFF0074D9),
+                                Color(0xFF003D5C),
+                                Color(0xFF001F3F),
+                              ],
+                              stops: [0.0, 0.15, 0.3, 0.5, 0.7, 0.85, 1.0],
+                              begin: Alignment.centerLeft,
+                              end: Alignment.centerRight,
+                            ),
+                            child: Text(
+                              'Dashboard Molybden',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 24,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          IconButton(
+                            icon: const Icon(Icons.info, color: Colors.black),
+                            onPressed: _showRulesPopup,
+                          ),
+                        ],
+                      ),
+                    ),
+                    Expanded(
+                      flex: 4,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          StatusLegendPopup.buildLegendItem(
+                              Colors.blue.withOpacity(0.8),
+                              "Completed",
+                              Colors.green,
+                              Colors.white),
+                          const SizedBox(width: 24),
+                          const Row(
+                            children: [
+                              SimpleClockIcon(
+                                size: 22,
+                                color: Colors.orange,
+                                backgroundColor: Colors.transparent,
+                              ),
+                              SizedBox(width: 10),
+                              Text(
+                                "Now",
+                                style: TextStyle(
+                                    fontSize: 18, color: Colors.white),
+                              )
+                            ],
+                          ),
+                          const SizedBox(width: 24),
+                          StatusLegendPopup.buildLegendIconItem("Overdue",
+                              Icons.warning_amber, Colors.red, Colors.white),
+                        ],
+                      ),
+                    ),
+                    Expanded(
+                      flex: 3,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          Text(
+                            DateFormat("dd/MMM/yy HH:mm:ss")
+                                .format(_currentTime),
+                            style: const TextStyle(
+                                color: Colors.white, fontSize: 20),
+                          ),
+                          const SizedBox(width: 20),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              Text(
+                                "Final update: ${formatTime(_lastUpdateTime)}",
+                                style: const TextStyle(
+                                    color: Colors.white70, fontSize: 18),
+                              ),
+                              Text(
+                                "Next update: ${formatTime(_lastUpdateTime?.add(const Duration(minutes: 1)))}",
+                                style: const TextStyle(
+                                    color: Colors.white70, fontSize: 18),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                );
+              },
+            )),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(2),
+        child: Column(
           children: [
-            SingleChildScrollView(
-              child: Column(
+            const Shimmer(
+              period: Duration(milliseconds: 5000),
+              gradient: LinearGradient(
+                colors: [
+                  Color(0xFF001F3F),
+                  Color(0xFF003D5C),
+                  Color(0xFF0074D9),
+                  Color(0xFF39CCCC),
+                  Color(0xFF0074D9),
+                  Color(0xFF003D5C),
+                  Color(0xFF001F3F),
+                ],
+                stops: [0.0, 0.15, 0.3, 0.5, 0.7, 0.85, 1.0],
+                begin: Alignment.centerLeft,
+                end: Alignment.centerRight,
+              ),
+              child: Text(
+                'Sub Bush',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+
+            /// SubBush
+            Expanded(
+              flex: 6,
+              child: buildTableFromStream(
+                ApiService().subBushIotStream,
+                (data) => MolybdenTable(ferthList: data),
+              ),
+            ),
+            const Shimmer(
+              period: Duration(milliseconds: 5000),
+              gradient: LinearGradient(
+                colors: [
+                  Color(0xFF001F3F),
+                  Color(0xFF003D5C),
+                  Color(0xFF0074D9),
+                  Color(0xFF39CCCC),
+                  Color(0xFF0074D9),
+                  Color(0xFF003D5C),
+                  Color(0xFF001F3F),
+                ],
+                stops: [0.0, 0.15, 0.3, 0.5, 0.7, 0.85, 1.0],
+                begin: Alignment.centerLeft,
+                end: Alignment.centerRight,
+              ),
+              child: Text(
+                'Main Bush',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+            // const SizedBox(height: 8),
+
+            /// MainBush + ImageMachine cùng hàng
+            Expanded(
+              flex: 3,
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  buildRow(
-                    stream: ApiService().iotStream,
-                    tableBuilder: (data) => MolybdenTable(ferthList: data),
+                  Expanded(
+                    flex: 5,
+                    child: buildTableFromStream(
+                      ApiService().mainBushIotStream,
+                      (data) => MolybdenMainBushTable(ferthList: data),
+                    ),
                   ),
-                  Container(
-                    width: MediaQuery.of(context).size.width,
-                    margin: const EdgeInsets.only(right: 8),
-                    child: const Align(
-                        alignment: Alignment.centerRight,
-                        child: ImageMachine()),
-                  )
+                  Expanded(
+                    flex: 2,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: const Color(0xFF1197D1).withOpacity(0.7),
+                          width: 1.5,
+                        ),
+                        boxShadow: const [
+                          BoxShadow(
+                            color: Color(0x331197D1),
+                            blurRadius: 10,
+                          ),
+                        ],
+                      ),
+                      child: const Center(
+                        child: ImageMachine(),
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -367,8 +429,7 @@ class _DashboardIOTScreenState extends State<DashboardIOTScreen> {
           child: ConstrainedBox(
             constraints: BoxConstraints(
               maxWidth: MediaQuery.of(context).size.width * 0.75,
-              maxHeight: MediaQuery.of(context).size.height -
-                  48, // trừ insetPadding vertical * 2
+              maxHeight: MediaQuery.of(context).size.height - 48,
             ),
             child: Container(
               decoration: BoxDecoration(
@@ -387,10 +448,8 @@ class _DashboardIOTScreenState extends State<DashboardIOTScreen> {
                 ],
               ),
               child: Column(
-                mainAxisSize:
-                    MainAxisSize.min, // ← key fix: không ép full height
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  /// HEADER
                   Container(
                     padding:
                         const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
@@ -425,8 +484,6 @@ class _DashboardIOTScreenState extends State<DashboardIOTScreen> {
                       ],
                     ),
                   ),
-
-                  /// BODY — Expanded để chiếm hết phần còn lại
                   Expanded(
                     child: Padding(
                       padding: const EdgeInsets.all(8),
@@ -439,8 +496,6 @@ class _DashboardIOTScreenState extends State<DashboardIOTScreen> {
                       ),
                     ),
                   ),
-
-                  /// FOOTER
                   const Padding(
                     padding: EdgeInsets.all(8),
                     child: Text(
@@ -457,63 +512,63 @@ class _DashboardIOTScreenState extends State<DashboardIOTScreen> {
     );
   }
 
-  Widget buildTableFromStream(Stream<List<FerthModel>> stream,
-      Widget Function(List<FerthModel>) tableBuilder) {
+  Widget buildTableFromStream(
+    Stream<List<FerthModel>> stream,
+    Widget Function(List<FerthModel>) tableBuilder,
+  ) {
     return Card(
-        elevation: 10,
-        color: Colors.white, // nền card dark navy
-        shadowColor: const Color(0xFF1197D1),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
-          side: BorderSide(
-            color: const Color(0xFF1197D1).withOpacity(0.7),
-            width: 1.5,
-          ),
+      elevation: 10,
+      color: Colors.white,
+      shadowColor: const Color(0xFF1197D1),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(8),
+        side: BorderSide(
+          color: const Color(0xFF1197D1).withOpacity(0.7),
+          width: 1.5,
         ),
-        child: SizedBox(
-          height: MediaQuery.of(context).size.height / 1.7,
-          child: StreamBuilder<List<FerthModel>>(
-            stream: stream,
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Center(child: CircularProgressIndicator());
-              } else if (snapshot.hasError) {
-                return Center(child: Text("Error: ${snapshot.error}"));
-              } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                return Container(
-                  alignment: Alignment.center,
-                  child: const Shimmer(
-                    period: Duration(milliseconds: 3000),
-                    gradient: LinearGradient(
-                      colors: [
-                        Color(0xFF3F0000), // Đỏ đậm
-                        Color(0xFF5C0000), // Đỏ trung bình
-                        Color(0xFFD90000), // Đỏ sáng
-                        Color(0xFFFF4136), // Đỏ cam
-                        Color(0xFFD90000), // Đỏ sáng
-                        Color(0xFF5C0000), // Đỏ trung bình
-                        Color(0xFF3F0000), // Đỏ đậm
-                      ],
-                      stops: [0.0, 0.15, 0.3, 0.5, 0.7, 0.85, 1.0],
-                      begin: Alignment.centerLeft,
-                      end: Alignment.centerRight,
-                    ),
-                    child: Text(
-                      "🚫 No Data Available",
-                      style: TextStyle(
-                        fontSize: 32,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.redAccent,
-                      ),
-                    ),
+      ),
+      child: StreamBuilder<List<FerthModel>>(
+        stream: stream,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError) {
+            return Center(child: Text("Error: ${snapshot.error}"));
+          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+            return Container(
+              alignment: Alignment.center,
+              child: const Shimmer(
+                period: Duration(milliseconds: 3000),
+                gradient: LinearGradient(
+                  colors: [
+                    Color(0xFF3F0000),
+                    Color(0xFF5C0000),
+                    Color(0xFFD90000),
+                    Color(0xFFFF4136),
+                    Color(0xFFD90000),
+                    Color(0xFF5C0000),
+                    Color(0xFF3F0000),
+                  ],
+                  stops: [0.0, 0.15, 0.3, 0.5, 0.7, 0.85, 1.0],
+                  begin: Alignment.centerLeft,
+                  end: Alignment.centerRight,
+                ),
+                child: Text(
+                  "🚫 No Data Available",
+                  style: TextStyle(
+                    fontSize: 32,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.redAccent,
                   ),
-                );
-              } else {
-                return tableBuilder(snapshot.data!);
-              }
-            },
-          ),
-        ));
+                ),
+              ),
+            );
+          } else {
+            return tableBuilder(snapshot.data!);
+          }
+        },
+      ),
+    );
   }
 
   Widget borderedTitle({
