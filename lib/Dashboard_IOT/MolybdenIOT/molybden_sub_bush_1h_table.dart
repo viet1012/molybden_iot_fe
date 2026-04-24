@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:molybdeniot/model/ItemModel.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
-import 'package:molybdeniot/model/BatchAbnormalModel.dart';
-import 'package:molybdeniot/model/ItemModel.dart';
 import 'package:molybdeniot/Dashboard_IOT/time_format.dart';
 
 import '../../model/FerthModel.dart';
@@ -12,90 +11,55 @@ import '../../model/abnormal_count.dart';
 import '../../model/abnormal_status.dart';
 import '../AnimatedIcon.dart';
 import '../blinking_cell.dart';
-import '../center_text.dart';
 import '../centered_title_text.dart';
 import '../custom_tooltip.dart';
 import '../error_items_provider.dart';
 import '../status_container_cell.dart';
 
-class MolybdenMainBushTable extends StatefulWidget {
+class MolybdenTable extends StatefulWidget {
   final List<FerthModel> ferthList;
 
-  const MolybdenMainBushTable({
+  const MolybdenTable({
     super.key,
     required this.ferthList,
   });
 
   @override
-  State<MolybdenMainBushTable> createState() => _MolybdenMainBushTableState();
+  State<MolybdenTable> createState() => _MolybdenTableState();
 }
 
-class _MolybdenMainBushTableState extends State<MolybdenMainBushTable> {
-  bool _showWaitingItems = false;
-  bool _isLoading = false;
+class _MolybdenTableState extends State<MolybdenTable> {
   final ScrollController _verticalScrollController = ScrollController();
 
   static final DateTime kDefaultStart = DateTime(2024, 3, 20, 0, 0);
   static const int kToleranceMinutes = 1;
 
-  static const List<String> kProcessSteps = [
-    "Wash_3",
-    "Molybden_1",
-    "Vacuum",
-    "Dry_1",
-    "Cool_Fan_1",
-    "Molybden_2",
-    "Dry_2",
-    "Cool_Fan_2",
-    // "1H_Oil_Hot",
-    // "3H_Oil_Cool",
+  static const List<String> kCheckTypes = [
+    "1H_Oil_Hot",
+    "3H_Oil_Cool",
+    "24H_Oil_Cool",
+    "Aging_7days",
   ];
 
-  static const Map<String, String> kStepTitles = {
-    "Wash_3": "Wash_3",
-    "Molybden_1": "Molipden 1",
-    "Vacuum": "Vacuum",
-    "Dry_1": "Dry_1",
-    "Cool_Fan_1": "Cool_Fan_1",
-    "Molybden_2": "Molipden 2",
-    "Dry_2": "Dry_2",
-    "Cool_Fan_2": "Cool_Fan_2",
-    // "1H_Oil_Hot": "1h Hot Oil",
-    // "3H_Oil_Cool": "3h Cool Oil",
-  };
-
   static const Map<String, int> estimatedTimes = {
-    "Wash_3": 60,
-    "Molybden_1": 60,
-    "Vacuum": 30,
-    "Dry_1": 60,
-    "Cool_Fan_1": 30,
-    "Molybden_2": 60,
-    "Dry_2": 60,
-    "Cool_Fan_2": 30,
-    // "1H_Oil_Hot": 60,
-    // "3H_Oil_Cool": 180,
+    "1H_Oil_Hot": 60,
+    "3H_Oil_Cool": 180,
+    "24H_Oil_Cool": 1440,
+    "Aging_7days": 10080,
   };
 
   List<String> getCheckTypesByFerth(String ferth) {
-    return List<String>.from(kProcessSteps);
+    return List.from(kCheckTypes);
   }
 
   DateTime toSecond(DateTime t) {
-    return DateTime(
-      t.year,
-      t.month,
-      t.day,
-      t.hour,
-      t.minute,
-      t.second,
-    );
+    return DateTime(t.year, t.month, t.day, t.hour, t.minute, t.second);
   }
 
   AbnormalStatus getItemAbnormalStatus(
-    ItemModel item,
-    DateTime previousFinishTime,
-  ) {
+      ItemModel item,
+      DateTime previousFinishTime,
+      ) {
     final checkType = item.itemCheck;
     final estimatedTime = estimatedTimes[checkType] ?? 0;
 
@@ -116,6 +80,7 @@ class _MolybdenMainBushTableState extends State<MolybdenMainBushTable> {
 
     if (startTime != null && finishTime == null && estimatedTime > 0) {
       final expectedFinish = startTime.add(Duration(minutes: estimatedTime));
+
       if (DateTime.now().isAfter(expectedFinish)) {
         isOverdue = true;
       }
@@ -129,23 +94,28 @@ class _MolybdenMainBushTableState extends State<MolybdenMainBushTable> {
     int errorCount = 0;
     int overdueCount = 0;
 
-    for (final step in kProcessSteps) {
-      final item = _findItem(items, step);
+    for (final item in items) {
+      if (!kCheckTypes.contains(item.itemCheck)) continue;
+
       final status = getItemAbnormalStatus(item, previousFinishTime);
 
       if (status.isError) errorCount++;
       if (status.isOverdue) overdueCount++;
 
-      final computed = _computeTimes(item, fallbackStart: previousFinishTime);
-      previousFinishTime = computed.finish;
+      if (item.finishTime != null) {
+        previousFinishTime = item.finishTime!;
+      }
     }
 
     return AbnormalCount(errorCount: errorCount, overdueCount: overdueCount);
   }
 
   int getCurrentStepIndex(LotModel lot) {
-    for (int i = 0; i < kProcessSteps.length; i++) {
-      final item = _findItem(lot.items, kProcessSteps[i]);
+    final filteredItems =
+    lot.items.where((e) => kCheckTypes.contains(e.itemCheck)).toList();
+
+    for (int i = 0; i < filteredItems.length; i++) {
+      final item = filteredItems[i];
 
       if (item.startTime != null && item.finishTime == null) {
         return i;
@@ -156,7 +126,7 @@ class _MolybdenMainBushTableState extends State<MolybdenMainBushTable> {
       }
     }
 
-    return kProcessSteps.length;
+    return filteredItems.length;
   }
 
   List<LotModel> sortLotsByErrorsAndSizeAndTime(List<FerthModel> ferthList) {
@@ -178,10 +148,6 @@ class _MolybdenMainBushTableState extends State<MolybdenMainBushTable> {
         return abnormalB.errorCount.compareTo(abnormalA.errorCount);
       }
 
-      if (a.items.length != b.items.length) {
-        return b.items.length.compareTo(a.items.length);
-      }
-
       final stepA = getCurrentStepIndex(a);
       final stepB = getCurrentStepIndex(b);
 
@@ -189,17 +155,24 @@ class _MolybdenMainBushTableState extends State<MolybdenMainBushTable> {
         return stepB.compareTo(stepA);
       }
 
-      final startTimesA =
-          a.items.where((e) => e.startTime != null).map((e) => e.startTime!);
-      final startTimesB =
-          b.items.where((e) => e.startTime != null).map((e) => e.startTime!);
+      final startA = a.items
+          .where((e) => kCheckTypes.contains(e.itemCheck))
+          .where((e) => e.startTime != null)
+          .map((e) => e.startTime!)
+          .toList();
 
-      if (startTimesA.isEmpty && startTimesB.isEmpty) return 0;
-      if (startTimesA.isEmpty) return 1;
-      if (startTimesB.isEmpty) return -1;
+      final startB = b.items
+          .where((e) => kCheckTypes.contains(e.itemCheck))
+          .where((e) => e.startTime != null)
+          .map((e) => e.startTime!)
+          .toList();
 
-      final earliestA = startTimesA.reduce((x, y) => x.isBefore(y) ? x : y);
-      final earliestB = startTimesB.reduce((x, y) => x.isBefore(y) ? x : y);
+      if (startA.isEmpty && startB.isEmpty) return 0;
+      if (startA.isEmpty) return 1;
+      if (startB.isEmpty) return -1;
+
+      final earliestA = startA.reduce((a, b) => a.isBefore(b) ? a : b);
+      final earliestB = startB.reduce((a, b) => a.isBefore(b) ? a : b);
 
       return earliestA.compareTo(earliestB);
     });
@@ -218,20 +191,21 @@ class _MolybdenMainBushTableState extends State<MolybdenMainBushTable> {
     for (final lot in sortedLots) {
       if (!seenLots.add(lot.lot)) continue;
 
+      final hrcNotes = _extractHrcNotes(lot);
       final ferth = lot.info.isNotEmpty ? lot.info.first.ferth : "";
+
       final rowCells = <Widget>[
-        CenteredText("$idCounter", Colors.grey),
-        _buildRfidCell(lot),
+        _centerCell("$idCounter", Colors.grey),
+        _buildRfidCell(lot, hrcNotes),
         ..._createRowCellsForItem(
           items: lot.items,
-          rowId: "main-$idCounter",
+          rowId: "$idCounter",
           lot: lot,
           ferth: ferth,
         ),
       ];
 
-      final totalColumns = 2 + kProcessSteps.length;
-      while (rowCells.length < totalColumns) {
+      while (rowCells.length < 6) {
         rowCells.add(const SizedBox.shrink());
       }
 
@@ -239,46 +213,35 @@ class _MolybdenMainBushTableState extends State<MolybdenMainBushTable> {
       idCounter++;
     }
 
-    return Stack(
-      children: [
-        SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildHeader(context),
-              Expanded(
-                child: SingleChildScrollView(
-                  controller: _verticalScrollController,
-                  child: Table(
-                    border: TableBorder.all(color: Colors.black45, width: 1),
-                    columnWidths: _columnWidths,
-                    children: rows,
-                  ),
-                ),
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Column(
+        children: [
+          _buildHeader(context),
+          Expanded(
+            child: SingleChildScrollView(
+              scrollDirection: Axis.vertical,
+              controller: _verticalScrollController,
+              child: Table(
+                border: TableBorder.all(color: Colors.black45, width: 1),
+                columnWidths: _columnWidths,
+                children: rows,
               ),
-            ],
+            ),
           ),
-        ),
-        if (_showWaitingItems) _buildWaitingOverlay(context),
-      ],
+        ],
+      ),
     );
   }
 
   Map<int, TableColumnWidth> get _columnWidths => const {
-        0: FixedColumnWidth(70), // ID
-        1: FixedColumnWidth(100), // RFID
-        2: FixedColumnWidth(165), // Wash_3
-        3: FixedColumnWidth(165), // Molipden 1
-        4: FixedColumnWidth(165), // Vacuum
-        5: FixedColumnWidth(165), // Dry_1
-        6: FixedColumnWidth(165), // Cool_Fan_1
-        7: FixedColumnWidth(165), // Molipden 2
-        8: FixedColumnWidth(165), // Dry_2
-        9: FixedColumnWidth(165), // Cool_Fan_2
-        // 10: FixedColumnWidth(125), // 1h Hot Oil
-        // 11: FixedColumnWidth(135), // 3h Cool Oil
-      };
+    0: FixedColumnWidth(70),
+    1: FixedColumnWidth(100),
+    2: FixedColumnWidth(165),
+    3: FixedColumnWidth(165),
+    4: FixedColumnWidth(165),
+    5: FixedColumnWidth(165),
+  };
 
   Widget _buildHeader(BuildContext context) {
     return Container(
@@ -291,9 +254,7 @@ class _MolybdenMainBushTableState extends State<MolybdenMainBushTable> {
             children: [
               const CenteredTitleText('ID'),
               const CenteredTitleText('RFID'),
-              ...kProcessSteps
-                  .map((step) => CenteredTitleText(kStepTitles[step] ?? step))
-                  .toList(),
+              ...kCheckTypes.map((e) => CenteredTitleText(e)).toList(),
             ],
           ),
         ],
@@ -301,75 +262,52 @@ class _MolybdenMainBushTableState extends State<MolybdenMainBushTable> {
     );
   }
 
-  Widget _buildWaitingHeaderButton() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        const CenteredTitleText('Waiting'),
-        OutlinedButton(
-          style: OutlinedButton.styleFrom(
-            shape: const CircleBorder(),
-            side: const BorderSide(color: Colors.white, width: 2),
-            backgroundColor: Colors.deepPurple,
-            padding: const EdgeInsets.all(8),
-          ),
-          onPressed: () {},
-          child: _isLoading
-              ? const CircularProgressIndicator(color: Colors.black)
-              : const Icon(Icons.hourglass_bottom, color: Colors.white),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildWaitingOverlay(BuildContext context) {
-    return Align(
+  Widget _centerCell(String text, Color color) {
+    return Container(
+      height: 40,
       alignment: Alignment.center,
-      child: GestureDetector(
-        onTap: () => setState(() => _showWaitingItems = false),
-        child: AnimatedOpacity(
-          duration: const Duration(milliseconds: 200),
-          opacity: 1.0,
-          child: Container(
-            height: MediaQuery.of(context).size.height / 1.6,
-            color: Colors.black.withOpacity(0.5),
-            child: Center(
-              child: Container(
-                padding: const EdgeInsets.all(8),
-                decoration: const BoxDecoration(color: Colors.white),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text(
-                          "Waiting Items List",
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        IconButton(
-                          hoverColor: Colors.blueAccent,
-                          icon: const Icon(Icons.close, color: Colors.red),
-                          onPressed: () =>
-                              setState(() => _showWaitingItems = false),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 10),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ),
+      color: color.withOpacity(0.2),
+      child: Text(
+        text,
+        style: const TextStyle(fontWeight: FontWeight.bold),
       ),
     );
   }
 
-  Widget _buildRfidCell(LotModel lot) {
+  _HrcNotes _extractHrcNotes(LotModel lot) {
+    String hrc1 = "";
+    String hrc2 = "";
+
+    final info = lot.info;
+
+    final hrc1Info = info.firstWhereOrNull((e) => e.itemCheckFinal == 'HRC_1');
+    final hrc2Info = info.firstWhereOrNull((e) => e.itemCheckFinal == 'HRC_2');
+
+    if (hrc1Info != null) hrc1 = hrc1Info.note ?? "";
+    if (hrc2Info != null) hrc2 = hrc2Info.note ?? "";
+
+    return _HrcNotes(hrc1: hrc1, hrc2: hrc2);
+  }
+
+  Widget _buildRfidCell(LotModel lot, _HrcNotes hrcNotes) {
+    final icNotePart = (() {
+      if (hrcNotes.hrc1.isNotEmpty || hrcNotes.hrc2.isNotEmpty) {
+        final parts = <String>[];
+
+        if (hrcNotes.hrc1.isNotEmpty) {
+          parts.add('HRC BF TEMP: ${hrcNotes.hrc1}');
+        }
+
+        if (hrcNotes.hrc2.isNotEmpty) {
+          parts.add('HRC AF TEMP: ${hrcNotes.hrc2}');
+        }
+
+        return parts.join(' & ');
+      }
+
+      return 'HRC BF TEMP';
+    })();
+
     final details = (() {
       final list = lot.info
           .where((e) => e.poreqnosWithQty.isNotEmpty)
@@ -377,6 +315,7 @@ class _MolybdenMainBushTableState extends State<MolybdenMainBushTable> {
           .toList();
 
       if (list.isEmpty) return 'No PO info';
+
       return list.join('\n');
     })();
 
@@ -384,7 +323,7 @@ class _MolybdenMainBushTableState extends State<MolybdenMainBushTable> {
       alignment: Alignment.center,
       padding: const EdgeInsets.all(8),
       child: CustomTooltip(
-        icNotePart: 'PO Details',
+        icNotePart: icNotePart,
         details: details,
         child: SelectableText(
           '[${lot.rfID_key.toString().padLeft(2, '0')}]',
@@ -410,11 +349,11 @@ class _MolybdenMainBushTableState extends State<MolybdenMainBushTable> {
     final rowCells = <Widget>[];
     final currentOverdueItems = <Map<String, String>>{};
     final errorItemsProvider =
-        Provider.of<ErrorItemsProvider>(context, listen: false);
+    Provider.of<ErrorItemsProvider>(context, listen: false);
 
     final allowedTypes = getCheckTypesByFerth(ferth);
 
-    for (final checkType in kProcessSteps) {
+    for (final checkType in kCheckTypes) {
       if (!allowedTypes.contains(checkType)) {
         rowCells.add(
           Container(
@@ -435,33 +374,27 @@ class _MolybdenMainBushTableState extends State<MolybdenMainBushTable> {
       final computedStartTime = adjusted.start;
       final computedFinishTime = adjusted.finish;
 
-      const bool isWarning = false;
-
       final errorInfo = _computeErrors(
-        checkType: checkType,
         item: item,
         computedStartTime: computedStartTime,
-        computedFinishTime: computedFinishTime,
         previousFinishTime: previousFinishTime,
       );
 
       final isError = errorInfo.isError;
-      final isErrorNG = errorInfo.isErrorNG;
       final errorComment = errorInfo.errorComment;
 
-      if (isError && !errorItemsProvider.isAlreadyAbnormal(lot.lot)) {
-        errorItemsProvider.markAbnormal(lot.lot);
-
-        final batchAbnormalModel = BatchAbnormalModel(
-          batchId: lot.lot,
-          dateadd: DateTime.now(),
-          process: checkType,
-          comment: errorComment,
-        );
-
-        // ApiService().addBatch(batchAbnormalModel);
-        debugPrint("Abnormal detected: ${batchAbnormalModel.batchId}");
-      }
+      // if (isError && !errorItemsProvider.isAlreadyAbnormal(lot.lot)) {
+      //   errorItemsProvider.markAbnormal(lot.lot);
+      //
+      //   // Nếu muốn push abnormal lên API thì mở lại đoạn này
+      //   // final batchAbnormalModel = BatchAbnormalModel(
+      //   //   batchId: lot.lot,
+      //   //   dateadd: DateTime.now(),
+      //   //   process: checkType,
+      //   //   comment: errorComment,
+      //   // );
+      //   // ApiService().addBatch(batchAbnormalModel);
+      // }
 
       final progressState = _computeProgress(
         item: item,
@@ -487,7 +420,7 @@ class _MolybdenMainBushTableState extends State<MolybdenMainBushTable> {
       rowCells.add(
         BlinkingCell(
           isOverdue: progressState.isOverdue,
-          isWarning: isWarning,
+          isWarning: false,
           child: Tooltip(
             decoration: BoxDecoration(
               color: Colors.black87,
@@ -503,8 +436,6 @@ class _MolybdenMainBushTableState extends State<MolybdenMainBushTable> {
               checkType: checkType,
               item: item,
               isError: isError,
-              isErrorNG: isErrorNG,
-              isWarning: isWarning,
               isOverdue: progressState.isOverdue,
               computedStartTime: computedStartTime,
               computedFinishTime: computedFinishTime,
@@ -513,7 +444,7 @@ class _MolybdenMainBushTableState extends State<MolybdenMainBushTable> {
               isOverdue: progressState.isOverdue,
               isInProgress: progressState.isInProgress,
               isError: isError,
-              isWarning: isWarning,
+              isWarning: false,
               progress: progressState.progress,
               progressColors: progressColors,
               computedFinishTime: computedFinishTime,
@@ -521,7 +452,6 @@ class _MolybdenMainBushTableState extends State<MolybdenMainBushTable> {
               finishTime: finishTime,
               child: buildStatusRow(
                 isOverdue: progressState.isOverdue,
-                isWarning: isWarning,
                 isInProgress: progressState.isInProgress,
                 isError: isError,
                 items: items,
@@ -533,15 +463,14 @@ class _MolybdenMainBushTableState extends State<MolybdenMainBushTable> {
         ),
       );
 
-      _postFrameSyncErrors(
-        errorItemsProvider: errorItemsProvider,
-        currentOverdueItems: currentOverdueItems,
-        checkType: checkType,
-        rowId: rowId,
-        lot: lot,
-        finishTime: finishTime,
-        computedFinishTime: computedFinishTime,
-      );
+      // _postFrameSyncErrors(
+      //   errorItemsProvider: errorItemsProvider,
+      //   currentOverdueItems: currentOverdueItems,
+      //   checkType: checkType,
+      //   rowId: rowId,
+      //   lot: lot,
+      //   computedFinishTime: computedFinishTime,
+      // );
 
       previousFinishTime = computedFinishTime;
     }
@@ -551,7 +480,7 @@ class _MolybdenMainBushTableState extends State<MolybdenMainBushTable> {
 
   ItemModel _findItem(List<ItemModel> items, String checkType) {
     return items.firstWhere(
-      (e) => e.itemCheck == checkType,
+          (e) => e.itemCheck == checkType,
       orElse: () => ItemModel.basic(itemCheck: checkType),
     );
   }
@@ -560,38 +489,42 @@ class _MolybdenMainBushTableState extends State<MolybdenMainBushTable> {
     final estimated = estimatedTimes[item.itemCheck] ?? 0;
     final start = item.startTime ?? fallbackStart;
     final finish = item.finishTime ?? start.add(Duration(minutes: estimated));
-    return _Times(start: start, finish: finish, estimatedMinutes: estimated);
+
+    return _Times(
+      start: start,
+      finish: finish,
+      estimatedMinutes: estimated,
+    );
   }
 
   _Times _adjustStartIfNeeded(
-    ItemModel item,
-    _Times t,
-    DateTime previousFinishTime,
-  ) {
+      ItemModel item,
+      _Times t,
+      DateTime previousFinishTime,
+      ) {
     if (previousFinishTime.isBefore(DateTime.now()) && item.startTime == null) {
       final now = DateTime.now();
+
       return _Times(
         start: now,
         finish: now.add(Duration(minutes: t.estimatedMinutes)),
         estimatedMinutes: t.estimatedMinutes,
       );
     }
+
     return t;
   }
 
   _ErrorInfo _computeErrors({
-    required String checkType,
     required ItemModel item,
     required DateTime computedStartTime,
-    required DateTime computedFinishTime,
     required DateTime previousFinishTime,
   }) {
     bool isError = false;
-    bool isErrorNG = false;
     String errorComment = "";
 
     final threshold =
-        previousFinishTime.subtract(const Duration(minutes: kToleranceMinutes));
+    previousFinishTime.subtract(const Duration(minutes: kToleranceMinutes));
 
     if (computedStartTime.isBefore(threshold)) {
       isError = true;
@@ -600,7 +533,6 @@ class _MolybdenMainBushTableState extends State<MolybdenMainBushTable> {
 
     return _ErrorInfo(
       isError: isError,
-      isErrorNG: isErrorNG,
       errorComment: errorComment,
     );
   }
@@ -622,6 +554,7 @@ class _MolybdenMainBushTableState extends State<MolybdenMainBushTable> {
       progress = (elapsed.inMinutes / totalMinutes).clamp(0.0, 1.0);
 
       isInProgress = true;
+
       if (DateTime.now().isAfter(computedFinishTime)) {
         isOverdue = true;
       }
@@ -645,8 +578,10 @@ class _MolybdenMainBushTableState extends State<MolybdenMainBushTable> {
     if (isOverdue) {
       final overdueMinutes =
           DateTime.now().difference(computedFinishTime).inMinutes;
+
       final opacity =
-          (0.1 + (overdueMinutes / 30) * (0.8 - 0.4)).clamp(0.4, 0.8);
+      (0.1 + (overdueMinutes / 30) * (0.8 - 0.4)).clamp(0.4, 0.8);
+
       startColor = Colors.orange.withOpacity(opacity);
       endColor = Colors.yellow.withOpacity((opacity + 0.1).clamp(0.0, 1.0));
     }
@@ -662,8 +597,6 @@ class _MolybdenMainBushTableState extends State<MolybdenMainBushTable> {
     required String checkType,
     required ItemModel item,
     required bool isError,
-    required bool isErrorNG,
-    required bool isWarning,
     required bool isOverdue,
     required DateTime computedStartTime,
     required DateTime computedFinishTime,
@@ -705,17 +638,18 @@ class _MolybdenMainBushTableState extends State<MolybdenMainBushTable> {
     required String checkType,
     required String rowId,
     required LotModel lot,
-    required DateTime? finishTime,
     required DateTime computedFinishTime,
   }) {
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      currentOverdueItems.removeWhere((m) =>
-          m['checkType'] == checkType &&
-          m['lot'] == lot.lot &&
-          DateTime.now().isBefore(computedFinishTime));
+      currentOverdueItems.removeWhere(
+            (m) =>
+        m['checkType'] == checkType &&
+            m['lot'] == lot.lot &&
+            DateTime.now().isBefore(computedFinishTime),
+      );
 
       final stillOverdue = currentOverdueItems.any(
-        (m) => m['rowId'] == rowId && m['checkType'] == checkType,
+            (m) => m['rowId'] == rowId && m['checkType'] == checkType,
       );
 
       if (!stillOverdue &&
@@ -727,21 +661,17 @@ class _MolybdenMainBushTableState extends State<MolybdenMainBushTable> {
         final lotId = m['lot'];
         final ct = m['checkType'];
         final machine = m['machine'];
-        final uniqueRowId = m['rowId'];
+        final rid = m['rowId'];
 
-        if (lotId == null ||
-            ct == null ||
-            machine == null ||
-            uniqueRowId == null) {
+        if (lotId == null || ct == null || machine == null || rid == null) {
           continue;
         }
 
-        final isNew =
-            !errorItemsProvider.errorItemsByRowId.containsKey(uniqueRowId);
+        final isNew = !errorItemsProvider.errorItemsByRowId.containsKey(rid);
 
         if (isNew) {
           errorItemsProvider.updateErrorItems(
-            uniqueRowId,
+            rid,
             machine,
             ct,
             lotId,
@@ -754,7 +684,6 @@ class _MolybdenMainBushTableState extends State<MolybdenMainBushTable> {
 
   Widget buildStatusRow({
     required bool isOverdue,
-    required bool isWarning,
     required bool isInProgress,
     required bool isError,
     required List<ItemModel> items,
@@ -765,7 +694,7 @@ class _MolybdenMainBushTableState extends State<MolybdenMainBushTable> {
       mainAxisAlignment: MainAxisAlignment.center,
       mainAxisSize: MainAxisSize.min,
       children: [
-        if (isOverdue || isWarning)
+        if (isOverdue)
           const AnimatedIconWidget(
             icon: Icons.warning_amber,
             color: Colors.red,
@@ -787,10 +716,10 @@ class _MolybdenMainBushTableState extends State<MolybdenMainBushTable> {
   }
 
   Widget _createDataCell(
-    List<ItemModel> items,
-    String checkType,
-    DateTime previousFinishTime,
-  ) {
+      List<ItemModel> items,
+      String checkType,
+      DateTime previousFinishTime,
+      ) {
     final item = _findItem(items, checkType);
     final estimated = estimatedTimes[checkType] ?? 0;
 
@@ -814,6 +743,7 @@ class _MolybdenMainBushTableState extends State<MolybdenMainBushTable> {
 
   String formatFullDateBasic(DateTime? dateTime) {
     if (dateTime == null) return "N/A";
+
     return "${dateTime.day.toString().padLeft(2, '0')}/"
         "${dateTime.month.toString().padLeft(2, '0')}/"
         "${dateTime.year} "
@@ -828,8 +758,20 @@ class _MolybdenMainBushTableState extends State<MolybdenMainBushTable> {
 
   String formatTime(DateTime? time) {
     if (time == null) return '--:--';
-    return '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
+
+    return '${time.hour.toString().padLeft(2, '0')}:'
+        '${time.minute.toString().padLeft(2, '0')}';
   }
+}
+
+class _HrcNotes {
+  final String hrc1;
+  final String hrc2;
+
+  const _HrcNotes({
+    required this.hrc1,
+    required this.hrc2,
+  });
 }
 
 class _Times {
@@ -846,12 +788,10 @@ class _Times {
 
 class _ErrorInfo {
   final bool isError;
-  final bool isErrorNG;
   final String errorComment;
 
   const _ErrorInfo({
     required this.isError,
-    required this.isErrorNG,
     required this.errorComment,
   });
 }
@@ -873,6 +813,7 @@ extension FirstWhereOrNullExt<T> on Iterable<T> {
     for (final e in this) {
       if (test(e)) return e;
     }
+
     return null;
   }
 }

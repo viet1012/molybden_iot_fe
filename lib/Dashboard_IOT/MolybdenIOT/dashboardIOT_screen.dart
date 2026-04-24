@@ -1,23 +1,19 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:molybdeniot/Dashboard_IOT/rule_IOT_table.dart';
 import 'package:molybdeniot/Dashboard_IOT/status_legend_popup.dart';
-import 'package:intl/intl.dart';
-import 'package:provider/provider.dart';
 import 'package:shimmer/shimmer.dart';
 
 import '../../api_service.dart';
 import '../../model/FerthModel.dart';
-import '../Animated_induction_text.dart';
 import '../ImageMachine.dart';
+import '../SimpleClockIcon.dart';
 import '../shimmer_title.dart';
 import 'molybden_main_bush_table.dart';
+import 'molybden_sub_bush_1h_table.dart';
 import 'molybden_sub_bush_table.dart';
-import '../SimpleClockIcon.dart';
-import '../error_items_provider.dart';
-import '../ferth_main_mold_table.dart';
-import '../ferth_mold_main_table.dart';
 
 class DashboardIOTScreen extends StatefulWidget {
   const DashboardIOTScreen({super.key});
@@ -289,31 +285,70 @@ class _DashboardIOTScreenState extends State<DashboardIOTScreen> {
       body: Padding(
         padding: const EdgeInsets.all(2),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const ShimmerTitle(text: 'Sub Bush'),
-
-            /// SubBush
             Expanded(
               flex: 6,
-              child: buildTableFromStream(
-                ApiService().subBushIotStream,
-                (data) => MolybdenTable(ferthList: data),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  /// ===== SUB BUSH =====
+                  Expanded(
+                    flex: 4,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const ShimmerTitle(text: 'Sub Bush'),
+                        Expanded(
+                          child: buildTableFromStream(
+                            ApiService().subBushIotStream,
+                            (data) => MolybdenSubBushTable(ferthList: data),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(width: 8),
+
+                  /// ===== Main Bush =====
+                  Expanded(
+                    flex: 1,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const ShimmerTitle(text: 'Main Bush'),
+                        Expanded(
+                          child: buildTableFromStream(
+                            ApiService().mainBushIotStream,
+                            (data) => MolybdenMainBushTable(ferthList: data),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
             ),
 
-            const ShimmerTitle(text: 'Main Bush'),
-
-            /// MainBush + ImageMachine cùng hàng
+            /// 1h + ImageMachine cùng hàng
             Expanded(
-              flex: 3,
+              flex: 2,
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
+                  // Expanded(
+                  //   flex: 5,
+                  //   child: buildTableFromStream(
+                  //     ApiService().mainBushIotStream,
+                  //     (data) => MolybdenMainBushTable(ferthList: data),
+                  //   ),
+                  // ),
                   Expanded(
-                    flex: 5,
+                    flex: 3,
                     child: buildTableFromStream(
-                      ApiService().mainBushIotStream,
-                      (data) => MolybdenMainBushTable(ferthList: data),
+                      ApiService().subBush1HIotStream,
+                      (data) => MolybdenTable(ferthList: data),
                     ),
                   ),
                   Expanded(

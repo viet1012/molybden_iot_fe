@@ -22,19 +22,19 @@ import '../error_items_provider.dart';
 import '../ferth_mold_main_waiting_table.dart';
 import '../status_container_cell.dart';
 
-class MolybdenTable extends StatefulWidget {
+class MolybdenSubBushTable extends StatefulWidget {
   final List<FerthModel> ferthList;
 
-  const MolybdenTable({
+  const MolybdenSubBushTable({
     super.key,
     required this.ferthList,
   });
 
   @override
-  State<MolybdenTable> createState() => _MolybdenTableState();
+  State<MolybdenSubBushTable> createState() => _MolybdenSubBushTableState();
 }
 
-class _MolybdenTableState extends State<MolybdenTable> {
+class _MolybdenSubBushTableState extends State<MolybdenSubBushTable> {
   // ===============================
   // UI STATE
   // ===============================
@@ -62,10 +62,10 @@ class _MolybdenTableState extends State<MolybdenTable> {
     "Molybden_2",
     "Dry_3",
     "Cool_Fan_3",
-    "1H_Oil_Hot",
-    "3H_Oil_Cool",
-    "24H_Oil_Cool",
-    "Aging_7days",
+    // "1H_Oil_Hot",
+    // "3H_Oil_Cool",
+    // "24H_Oil_Cool",
+    // "Aging_7days",
   ];
 
   static const Map<String, int> estimatedTimes = {
@@ -79,10 +79,10 @@ class _MolybdenTableState extends State<MolybdenTable> {
     "Molybden_2": 60,
     "Dry_3": 60, // hoặc 90 nếu máy chạy lâu
     "Cool_Fan_3": 20,
-    "1H_Oil_Hot": 60,
-    "3H_Oil_Cool": 180,
-    "24H_Oil_Cool": 1440,
-    "Aging_7days": 10080,
+    // "1H_Oil_Hot": 60,
+    // "3H_Oil_Cool": 180,
+    // "24H_Oil_Cool": 1440,
+    // "Aging_7days": 10080,
   };
 
   List<String> getCheckTypesByFerth(String ferth) {
@@ -370,21 +370,21 @@ class _MolybdenTableState extends State<MolybdenTable> {
 
   Map<int, TableColumnWidth> get _columnWidths => const {
         0: FixedColumnWidth(70), // ID
-        1: FixedColumnWidth(90), // RFID
-        2: FixedColumnWidth(125), // Wash_1
-        3: FixedColumnWidth(125), // Dry_1
-        4: FixedColumnWidth(125), // Cool_Fan_1
-        5: FixedColumnWidth(125), // Molipden 1
-        6: FixedColumnWidth(125), // Vacuum
-        7: FixedColumnWidth(125), // Dry_2
-        8: FixedColumnWidth(125), // Cool_Fan_2
-        9: FixedColumnWidth(125), // Molipden 2
-        10: FixedColumnWidth(125), // Dry_3
-        11: FixedColumnWidth(125), // Cool_Fan_3
-        12: FixedColumnWidth(125), // 1H_Oil_Hot
-        13: FixedColumnWidth(125), // 3H_Oil_Cool
-        14: FixedColumnWidth(125), // 24H_Oil_Cool
-        15: FixedColumnWidth(125), // Aging_7days
+        1: FixedColumnWidth(100), // RFID
+        2: FixedColumnWidth(165), // Wash_1
+        3: FixedColumnWidth(165), // Dry_1
+        4: FixedColumnWidth(165), // Cool_Fan_1
+        5: FixedColumnWidth(165), // Molipden 1
+        6: FixedColumnWidth(165), // Vacuum
+        7: FixedColumnWidth(165), // Dry_2
+        8: FixedColumnWidth(165), // Cool_Fan_2
+        9: FixedColumnWidth(165), // Molipden 2
+        10: FixedColumnWidth(165), // Dry_3
+        11: FixedColumnWidth(165), // Cool_Fan_3
+        // 12: FixedColumnWidth(125), // 1H_Oil_Hot
+        // 13: FixedColumnWidth(125), // 3H_Oil_Cool
+        // 14: FixedColumnWidth(125), // 24H_Oil_Cool
+        // 15: FixedColumnWidth(125), // Aging_7days
       };
   Widget _buildHeader(BuildContext context) {
     final checkTypes = kCheckTypes;

@@ -9,6 +9,7 @@ import 'model/machine.dart';
 
 enum BushType {
   subBush,
+  subBush1H,
   mainBush,
 }
 
@@ -28,7 +29,7 @@ class ApiService {
   /// MACHINE STREAM
   /// ==========================
   final StreamController<List<Machine>> _machineController =
-      StreamController<List<Machine>>.broadcast();
+  StreamController<List<Machine>>.broadcast();
 
   Stream<List<Machine>> get machineStream => _machineController.stream;
 
@@ -38,16 +39,25 @@ class ApiService {
   /// IOT STREAMS
   /// ==========================
   final StreamController<List<FerthModel>> _subBushIotController =
-      StreamController<List<FerthModel>>.broadcast();
+  StreamController<List<FerthModel>>.broadcast();
+
+  final StreamController<List<FerthModel>> _subBush1HIotController =
+  StreamController<List<FerthModel>>.broadcast();
 
   final StreamController<List<FerthModel>> _mainBushIotController =
-      StreamController<List<FerthModel>>.broadcast();
+  StreamController<List<FerthModel>>.broadcast();
 
-  Stream<List<FerthModel>> get subBushIotStream => _subBushIotController.stream;
+  Stream<List<FerthModel>> get subBushIotStream =>
+      _subBushIotController.stream;
+
+  Stream<List<FerthModel>> get subBush1HIotStream =>
+      _subBush1HIotController.stream;
+
   Stream<List<FerthModel>> get mainBushIotStream =>
       _mainBushIotController.stream;
 
   List<FerthModel>? _lastSubBushData;
+  List<FerthModel>? _lastSubBush1HData;
   List<FerthModel>? _lastMainBushData;
 
   Timer? _timer;
@@ -65,7 +75,7 @@ class ApiService {
 
       final List<dynamic> jsonList = jsonDecode(response.body);
       final List<Machine> machines =
-          jsonList.map((e) => Machine.fromJson(e)).toList();
+      jsonList.map((e) => Machine.fromJson(e)).toList();
 
       if (_isMachineChanged(machines)) {
         _lastMachines = machines;
@@ -137,6 +147,7 @@ class ApiService {
   Future<void> _fetchAllBushData() async {
     await Future.wait([
       fetchHeatMolybden(BushType.subBush),
+      fetchHeatMolybden(BushType.subBush1H),
       fetchHeatMolybden(BushType.mainBush),
     ]);
   }
@@ -184,6 +195,8 @@ class ApiService {
     switch (type) {
       case BushType.subBush:
         return "findDailyHeatMolybdenSubBushIOT";
+      case BushType.subBush1H:
+        return "findDailyHeatMolybdenSubBushIOT_1H";
       case BushType.mainBush:
         return "findDailyHeatMolybdenMainBushIOT";
     }
@@ -193,6 +206,8 @@ class ApiService {
     switch (type) {
       case BushType.subBush:
         return _subBushIotController;
+      case BushType.subBush1H:
+        return _subBush1HIotController;
       case BushType.mainBush:
         return _mainBushIotController;
     }
@@ -202,6 +217,8 @@ class ApiService {
     switch (type) {
       case BushType.subBush:
         return _lastSubBushData;
+      case BushType.subBush1H:
+        return _lastSubBush1HData;
       case BushType.mainBush:
         return _lastMainBushData;
     }
@@ -211,6 +228,9 @@ class ApiService {
     switch (type) {
       case BushType.subBush:
         _lastSubBushData = data;
+        break;
+      case BushType.subBush1H:
+        _lastSubBush1HData = data;
         break;
       case BushType.mainBush:
         _lastMainBushData = data;
@@ -223,7 +243,7 @@ class ApiService {
 
     for (var lot in ferth.lots) {
       lot.items.removeWhere((item) =>
-          item.itemCheck == "HRC_1" ||
+      item.itemCheck == "HRC_1" ||
           item.itemCheck == "HRC_2" ||
           item.itemCheck == "Temp_Point" ||
           item.itemCheck == "Temp_Point_1" ||
@@ -249,6 +269,12 @@ class ApiService {
     return _lastSubBushData ?? [];
   }
 
+  Future<List<FerthModel>> getSubBush1HData() async {
+    if (_lastSubBush1HData != null) return _lastSubBush1HData!;
+    await fetchHeatMolybden(BushType.subBush1H);
+    return _lastSubBush1HData ?? [];
+  }
+
   Future<List<FerthModel>> getMainBushData() async {
     if (_lastMainBushData != null) return _lastMainBushData!;
     await fetchHeatMolybden(BushType.mainBush);
@@ -270,6 +296,7 @@ class ApiService {
     _timer?.cancel();
     _machineController.close();
     _subBushIotController.close();
+    _subBush1HIotController.close();
     _mainBushIotController.close();
   }
 }
