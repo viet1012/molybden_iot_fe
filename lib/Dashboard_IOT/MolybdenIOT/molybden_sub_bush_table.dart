@@ -1,13 +1,9 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
-import 'package:molybdeniot/api_service.dart';
+import 'package:intl/intl.dart';
+import 'package:molybdeniot/Dashboard_IOT/time_format.dart';
 import 'package:molybdeniot/model/BatchAbnormalModel.dart';
 import 'package:molybdeniot/model/ItemModel.dart';
-import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-
-import 'package:molybdeniot/Dashboard_IOT/time_format.dart';
 
 import '../../model/FerthModel.dart';
 import '../../model/LotModel.dart';
@@ -19,7 +15,6 @@ import '../center_text.dart';
 import '../centered_title_text.dart';
 import '../custom_tooltip.dart';
 import '../error_items_provider.dart';
-import '../ferth_mold_main_waiting_table.dart';
 import '../status_container_cell.dart';
 
 class MolybdenSubBushTable extends StatefulWidget {
@@ -386,6 +381,7 @@ class _MolybdenSubBushTableState extends State<MolybdenSubBushTable> {
         // 14: FixedColumnWidth(125), // 24H_Oil_Cool
         // 15: FixedColumnWidth(125), // Aging_7days
       };
+
   Widget _buildHeader(BuildContext context) {
     final checkTypes = kCheckTypes;
 
@@ -1159,6 +1155,7 @@ class _MolybdenSubBushTableState extends State<MolybdenSubBushTable> {
 class _HrcNotes {
   final String hrc1;
   final String hrc2;
+
   const _HrcNotes({required this.hrc1, required this.hrc2});
 }
 
@@ -1166,6 +1163,7 @@ class _Times {
   final DateTime start;
   final DateTime finish;
   final int estimatedMinutes;
+
   const _Times(
       {required this.start,
       required this.finish,
@@ -1176,6 +1174,7 @@ class _ErrorInfo {
   final bool isError;
   final bool isErrorNG;
   final String errorComment;
+
   const _ErrorInfo(
       {required this.isError,
       required this.isErrorNG,
@@ -1186,6 +1185,7 @@ class _Progress {
   final double progress;
   final bool isInProgress;
   final bool isOverdue;
+
   const _Progress(
       {required this.progress,
       required this.isInProgress,

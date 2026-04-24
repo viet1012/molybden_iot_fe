@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:molybdeniot/model/ItemModel.dart';
 import 'package:intl/intl.dart';
-import 'package:provider/provider.dart';
-
 import 'package:molybdeniot/Dashboard_IOT/time_format.dart';
+import 'package:molybdeniot/model/ItemModel.dart';
+import 'package:provider/provider.dart';
 
 import '../../model/FerthModel.dart';
 import '../../model/LotModel.dart';
@@ -57,9 +56,9 @@ class _MolybdenTableState extends State<MolybdenTable> {
   }
 
   AbnormalStatus getItemAbnormalStatus(
-      ItemModel item,
-      DateTime previousFinishTime,
-      ) {
+    ItemModel item,
+    DateTime previousFinishTime,
+  ) {
     final checkType = item.itemCheck;
     final estimatedTime = estimatedTimes[checkType] ?? 0;
 
@@ -112,7 +111,7 @@ class _MolybdenTableState extends State<MolybdenTable> {
 
   int getCurrentStepIndex(LotModel lot) {
     final filteredItems =
-    lot.items.where((e) => kCheckTypes.contains(e.itemCheck)).toList();
+        lot.items.where((e) => kCheckTypes.contains(e.itemCheck)).toList();
 
     for (int i = 0; i < filteredItems.length; i++) {
       final item = filteredItems[i];
@@ -235,13 +234,13 @@ class _MolybdenTableState extends State<MolybdenTable> {
   }
 
   Map<int, TableColumnWidth> get _columnWidths => const {
-    0: FixedColumnWidth(70),
-    1: FixedColumnWidth(100),
-    2: FixedColumnWidth(165),
-    3: FixedColumnWidth(165),
-    4: FixedColumnWidth(165),
-    5: FixedColumnWidth(165),
-  };
+        0: FixedColumnWidth(70),
+        1: FixedColumnWidth(100),
+        2: FixedColumnWidth(165),
+        3: FixedColumnWidth(165),
+        4: FixedColumnWidth(165),
+        5: FixedColumnWidth(165),
+      };
 
   Widget _buildHeader(BuildContext context) {
     return Container(
@@ -349,7 +348,7 @@ class _MolybdenTableState extends State<MolybdenTable> {
     final rowCells = <Widget>[];
     final currentOverdueItems = <Map<String, String>>{};
     final errorItemsProvider =
-    Provider.of<ErrorItemsProvider>(context, listen: false);
+        Provider.of<ErrorItemsProvider>(context, listen: false);
 
     final allowedTypes = getCheckTypesByFerth(ferth);
 
@@ -480,7 +479,7 @@ class _MolybdenTableState extends State<MolybdenTable> {
 
   ItemModel _findItem(List<ItemModel> items, String checkType) {
     return items.firstWhere(
-          (e) => e.itemCheck == checkType,
+      (e) => e.itemCheck == checkType,
       orElse: () => ItemModel.basic(itemCheck: checkType),
     );
   }
@@ -498,10 +497,10 @@ class _MolybdenTableState extends State<MolybdenTable> {
   }
 
   _Times _adjustStartIfNeeded(
-      ItemModel item,
-      _Times t,
-      DateTime previousFinishTime,
-      ) {
+    ItemModel item,
+    _Times t,
+    DateTime previousFinishTime,
+  ) {
     if (previousFinishTime.isBefore(DateTime.now()) && item.startTime == null) {
       final now = DateTime.now();
 
@@ -524,7 +523,7 @@ class _MolybdenTableState extends State<MolybdenTable> {
     String errorComment = "";
 
     final threshold =
-    previousFinishTime.subtract(const Duration(minutes: kToleranceMinutes));
+        previousFinishTime.subtract(const Duration(minutes: kToleranceMinutes));
 
     if (computedStartTime.isBefore(threshold)) {
       isError = true;
@@ -580,7 +579,7 @@ class _MolybdenTableState extends State<MolybdenTable> {
           DateTime.now().difference(computedFinishTime).inMinutes;
 
       final opacity =
-      (0.1 + (overdueMinutes / 30) * (0.8 - 0.4)).clamp(0.4, 0.8);
+          (0.1 + (overdueMinutes / 30) * (0.8 - 0.4)).clamp(0.4, 0.8);
 
       startColor = Colors.orange.withOpacity(opacity);
       endColor = Colors.yellow.withOpacity((opacity + 0.1).clamp(0.0, 1.0));
@@ -642,14 +641,14 @@ class _MolybdenTableState extends State<MolybdenTable> {
   }) {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       currentOverdueItems.removeWhere(
-            (m) =>
-        m['checkType'] == checkType &&
+        (m) =>
+            m['checkType'] == checkType &&
             m['lot'] == lot.lot &&
             DateTime.now().isBefore(computedFinishTime),
       );
 
       final stillOverdue = currentOverdueItems.any(
-            (m) => m['rowId'] == rowId && m['checkType'] == checkType,
+        (m) => m['rowId'] == rowId && m['checkType'] == checkType,
       );
 
       if (!stillOverdue &&
@@ -716,10 +715,10 @@ class _MolybdenTableState extends State<MolybdenTable> {
   }
 
   Widget _createDataCell(
-      List<ItemModel> items,
-      String checkType,
-      DateTime previousFinishTime,
-      ) {
+    List<ItemModel> items,
+    String checkType,
+    DateTime previousFinishTime,
+  ) {
     final item = _findItem(items, checkType);
     final estimated = estimatedTimes[checkType] ?? 0;
 
